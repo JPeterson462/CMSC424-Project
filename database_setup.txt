@@ -22,3 +22,6 @@
             'PASSWORD': 'password',
         }
     }
+
+6. Apply the migrations for the new database
+    python manage.py migrate
