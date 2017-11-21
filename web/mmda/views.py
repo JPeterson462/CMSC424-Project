@@ -1,5 +1,8 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 
+from .models import DataAggregate
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the MMDA index.")
+    data_aggregates_list = DataAggregate.objects.all()
+    context = { 'data_aggregates_list': data_aggregates_list }
+    return render(request, 'mmda/index.html', context)

@@ -1,0 +1,9 @@
+{% if data_aggregates_list %}
+    <ul>
+    {% for dagr in data_aggregates_list %}
+        <li>{{ dagr.name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No data aggregates are available.</p>
+{% endif %}
