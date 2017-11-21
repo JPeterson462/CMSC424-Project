@@ -75,9 +75,9 @@ WSGI_APPLICATION = 'web.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mmdadb',
-        'USER': 'postgres',
+        'USER': 'django_user',
         'HOST': 'localhost',
         'PASSWORD': 'password',
     }
