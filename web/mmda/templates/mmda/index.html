@@ -1,3 +1,9 @@
+<form action="{% url 'mmda:insert_file' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="file_path" name="file_path" />
+    <input type="submit" value="Create New DAGR" />
+</form>
+
 {% if data_aggregates_list %}
     <ul>
     {% for dagr in data_aggregates_list %}
