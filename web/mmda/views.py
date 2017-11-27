@@ -16,10 +16,6 @@ def insert_file(request):
     # Grab the file path from the HTTP request
     file_path = request.POST['file_path']
 
-    # Create the DAGR where the default name is the selected file's name
-    new_dagr = DataAggregate(name=os.path.basename(file_path))
-    new_dagr.save()
-
     # Populate the file metadata for the selected file
     metadata = FileMetadata(
         file_name=os.path.basename(file_path),
@@ -29,6 +25,11 @@ def insert_file(request):
         last_modified=datetime.datetime.fromtimestamp(os.path.getmtime(file_path)),
         document_type_id=0)
     metadata.save()
+
+    # Create the DAGR where the default name is the selected file's name
+    new_dagr = DataAggregate(name=os.path.basename(file_path))
+    new_dagr.save()
+    new_dagr.files.add(metadata)
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
