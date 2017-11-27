@@ -13,6 +13,7 @@ class FileMetadata(models.Model):
     creator_name = models.CharField(max_length=200)
     time_created = models.DateTimeField()
     last_modified = models.DateTimeField()
+    size = models.PositiveIntegerField(default=0)
     document_type_id = models.PositiveIntegerField()
 
     def __str__(self):

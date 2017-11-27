@@ -24,6 +24,7 @@ def insert_file(request):
         creator_name=os.getlogin(),
         time_created=datetime.datetime.fromtimestamp(os.path.getctime(file_path)),
         last_modified=datetime.datetime.fromtimestamp(os.path.getmtime(file_path)),
+        size=os.path.getsize(file_path),
         document_type_id=0)
     metadata.save()
 
