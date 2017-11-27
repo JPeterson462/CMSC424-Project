@@ -1,0 +1,4 @@
+The following python modules are used:
+
+- Pillow (pip install Pillow)
+- Mutagen (pip install mutagen)

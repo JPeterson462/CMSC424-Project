@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
+from .parsing import *
 from .models import DataAggregate, FileMetadata
 
 def index(request):
@@ -25,6 +26,10 @@ def insert_file(request):
         last_modified=datetime.datetime.fromtimestamp(os.path.getmtime(file_path)),
         document_type_id=0)
     metadata.save()
+
+    # Create the metadata
+    if not parse_file(file_path):
+        print ("Invalid File: " + file_path)
 
     # Create the DAGR where the default name is the selected file's name
     new_dagr = DataAggregate(name=os.path.basename(file_path))
