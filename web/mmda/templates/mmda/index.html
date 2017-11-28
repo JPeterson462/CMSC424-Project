@@ -19,6 +19,13 @@
     <input type="submit" value="Create New Category" />
 </form>
 
+<h1>Remove Category</h1>
+<form action="{% url 'mmda:remove_category' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="category_id" name="category_id" />
+    <input type="submit" value="Remove Category" />
+</form>
+
 <h1>Add DAGR to Category</h1>
 <form action="{% url 'mmda:add_dagr_to_category' %}" method="post">
     {% csrf_token %}

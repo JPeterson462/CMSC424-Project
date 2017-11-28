@@ -29,7 +29,7 @@ class FileMetadata(models.Model):
 
 class Category(models.Model):
     category_name = models.CharField(max_length=200)
-    parent_category = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+    parent_category = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return "Category: " + self.category_name
