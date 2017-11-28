@@ -12,6 +12,13 @@
     <input type="submit" value="Create New DAGR" />
 </form>
 
+<h1>Create Category</h1>
+<form action="{% url 'mmda:create_category' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="category_name" name="category_name" />
+    <input type="submit" value="Create New Category" />
+</form>
+
 {% if data_aggregates_list %}
     <ul>
     {% for dagr in data_aggregates_list %}

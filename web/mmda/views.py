@@ -98,3 +98,17 @@ def bulk_data_insert(request):
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
+
+def create_category(request):
+    # Grab the category name from the HTTP request
+    category_name = request.POST['category_name']
+    
+    with connection.cursor() as cursor:
+        # Insert a new category record into the database
+        cursor.execute("""
+            INSERT INTO mmda_category (category_name)
+            VALUES (%s)
+        """, [category_name])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
