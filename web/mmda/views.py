@@ -130,3 +130,18 @@ def add_dagr_to_category(request):
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
+
+def remove_dagr_from_category(request):
+    # Grab the category ID and DAGR ID from the HTTP request
+    dagr_id = request.POST['dagr_id']
+    category_id = request.POST['category_id']
+
+    with connection.cursor() as cursor:
+        # Delete the record that maps the DAGR to the Category
+        cursor.execute("""
+            DELETE FROM mmda_dataaggregate_categories
+            WHERE dataaggregate_id = %s AND category_id = %s
+        """, [dagr_id, category_id])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
