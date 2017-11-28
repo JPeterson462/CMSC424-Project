@@ -112,3 +112,21 @@ def create_category(request):
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
+
+def add_dagr_to_category(request):
+    # Grab the category ID and DAGR ID from the HTTP request
+    dagr_id = request.POST['dagr_id']
+    category_id = request.POST['category_id']
+    
+    with connection.cursor() as cursor:
+        # Insert a new record that maps the DAGR to the Category
+        cursor.execute("""
+            INSERT INTO mmda_dataaggregate_categories (
+                dataaggregate_id, category_id
+            ) VALUES (
+                %s, %s
+            )
+        """, [dagr_id, category_id])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
