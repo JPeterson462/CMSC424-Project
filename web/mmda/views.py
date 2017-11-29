@@ -10,7 +10,10 @@ from django.urls import reverse
 from .models import DataAggregate, FileMetadata
 
 def index(request):
-    data_aggregates_list = DataAggregate.objects.all()
+    data_aggregates_list = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+    """)
     context = { 'data_aggregates_list': data_aggregates_list }
     return render(request, 'mmda/index.html', context)
 
@@ -191,3 +194,21 @@ def sterile_dagr_report(request):
 
     context = { 'sterile_dagrs': sterile_dagrs }
     return render(request, 'mmda/sterile_dagr_report.html', context)
+
+def time_range_dagr_report(request):
+    # Get the start and end times from the HTTP request
+    start_time = request.POST['start_time']
+    end_time = request.POST['end_time']
+
+    print(start_time)
+    print(end_time)
+
+    # Find all DataAggregates that were created between the start and end times
+    dagrs_list = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+        WHERE time_created BETWEEN %s AND %s
+    """, [start_time, end_time])
+
+    context = { 'dagrs_list': dagrs_list }
+    return render(request, 'mmda/time_range_dagr_report.html', context)

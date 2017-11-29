@@ -54,6 +54,15 @@
     <input type="submit" value="Generate Sterile DAGR Report" />
 </form>
 
+<h1>Time Range DAGR Report</h1>
+<form action="{% url 'mmda:time_range_dagr_report' %}" method="post">
+    {% csrf_token %}
+    Start time: <input type="datetime-local" id="start_time" name="start_time" />
+    <br />
+    End time: <input type="datetime-local" id="end_time" name="end_time" />
+    <input type="submit" value="Generate Time Range DAGR Report" />
+</form>
+
 {% if data_aggregates_list %}
     <ul>
     {% for dagr in data_aggregates_list %}
