@@ -12,6 +12,48 @@
     <input type="submit" value="Create New DAGR" />
 </form>
 
+<h1>Create Category</h1>
+<form action="{% url 'mmda:create_category' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="category_name" name="category_name" />
+    <input type="submit" value="Create New Category" />
+</form>
+
+<h1>Remove Category</h1>
+<form action="{% url 'mmda:remove_category' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="category_id" name="category_id" />
+    <input type="submit" value="Remove Category" />
+</form>
+
+<h1>Add DAGR to Category</h1>
+<form action="{% url 'mmda:add_dagr_to_category' %}" method="post">
+    {% csrf_token %}
+    Category ID: <input type="text" id="category_id" name="category_id" />
+    DAGR ID: <input type="text" id="dagr_id" name="dagr_id" />
+    <input type="submit" value="Add DAGR to Category" />
+</form>
+
+<h1>Remove DAGR from Category</h1>
+<form action="{% url 'mmda:remove_dagr_from_category' %}" method="post">
+    {% csrf_token %}
+    Category ID: <input type="text" id="category_id" name="category_id" />
+    DAGR ID: <input type="text" id="dagr_id" name="dagr_id" />
+    <input type="submit" value="Remove DAGR from Category" />
+</form>
+
+<h1>Orphan DAGR Report</h1>
+<form action="{% url 'mmda:orphan_dagr_report' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Generate Orphan DAGR Report" />
+</form>
+
+<h1>Sterile DAGR Report</h1>
+<form action="{% url 'mmda:sterile_dagr_report' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Generate Sterile DAGR Report" />
+</form>
+
 {% if data_aggregates_list %}
     <ul>
     {% for dagr in data_aggregates_list %}

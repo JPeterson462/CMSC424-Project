@@ -98,3 +98,96 @@ def bulk_data_insert(request):
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
+
+def create_category(request):
+    # Grab the category name from the HTTP request
+    category_name = request.POST['category_name']
+    
+    with connection.cursor() as cursor:
+        # Insert a new category record into the database
+        cursor.execute("""
+            INSERT INTO mmda_category (category_name)
+            VALUES (%s)
+        """, [category_name])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
+
+def remove_category(request):
+    # Get the Category ID from the HTTP request
+    category_id = request.POST['category_id']
+
+    with connection.cursor() as cursor:
+        # Delete all DAGR to Category mappings that involve this category
+        cursor.execute("""
+            DELETE FROM mmda_dataaggregate_categories
+            WHERE category_id = %s
+        """, [category_id])
+
+        # Delete the Category record
+        cursor.execute("""
+            DELETE FROM mmda_category
+            WHERE id = %s
+        """, [category_id])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
+
+def add_dagr_to_category(request):
+    # Grab the category ID and DAGR ID from the HTTP request
+    dagr_id = request.POST['dagr_id']
+    category_id = request.POST['category_id']
+    
+    with connection.cursor() as cursor:
+        # Insert a new record that maps the DAGR to the Category
+        cursor.execute("""
+            INSERT INTO mmda_dataaggregate_categories (
+                dataaggregate_id, category_id
+            ) VALUES (
+                %s, %s
+            )
+        """, [dagr_id, category_id])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
+
+def remove_dagr_from_category(request):
+    # Grab the category ID and DAGR ID from the HTTP request
+    dagr_id = request.POST['dagr_id']
+    category_id = request.POST['category_id']
+
+    with connection.cursor() as cursor:
+        # Delete the record that maps the DAGR to the Category
+        cursor.execute("""
+            DELETE FROM mmda_dataaggregate_categories
+            WHERE dataaggregate_id = %s AND category_id = %s
+        """, [dagr_id, category_id])
+
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
+
+def orphan_dagr_report(request):
+    # Find all DataAggregates which have no parent DAGRs
+    orphan_dagrs = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+        WHERE parent_dagr_id IS NULL
+    """)
+
+    context = { 'orphan_dagrs': orphan_dagrs }
+    return render(request, 'mmda/orphan_dagr_report.html', context)
+
+def sterile_dagr_report(request):
+    # Find all DataAggregates which have no child DAGRs
+    sterile_dagrs = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+        WHERE id NOT IN (
+            SELECT DISTINCT parent_dagr_id
+            FROM mmda_dataaggregate
+            WHERE parent_dagr_id IS NOT NULL
+        )
+    """)
+
+    context = { 'sterile_dagrs': sterile_dagrs }
+    return render(request, 'mmda/sterile_dagr_report.html', context)
