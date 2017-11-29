@@ -2,6 +2,7 @@ import datetime
 import glob
 import os
 import uuid
+import requests
 
 from django.db import connection
 from django.http import HttpResponseRedirect
@@ -16,24 +17,38 @@ def index(request):
     context = { 'data_aggregates_list': data_aggregates_list }
     return render(request, 'mmda/index.html', context)
 
-def create_dagr(file_path, parent_dagr_guid):
-    guid = str(uuid.uuid4())
-    with connection.cursor() as cursor:
-        # Create a new DAGR where the default name is the selected file's name
-        cursor.execute("""
-            INSERT INTO dagr (
-                dagr_guid, name, time_created, parent_dagr_guid
-            ) VALUES (
-                %s, %s, %s, %s
-            )
-        """, [guid, os.path.basename(file_path), datetime.datetime.now(), parent_dagr_guid])
-    storage_path = os.path.dirname(file_path)
-    creator_name = os.getlogin()
-    time_created = datetime.datetime.fromtimestamp(os.path.getctime(file_path))
-    last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+def format_date_from_header(header_date):
+    return datetime.datetime.strptime(header_date, '%a, %d %b %Y %H:%M:%S %Z')
 
-    # Create this file and parse its metadata
-    parse_file(file_path, guid, storage_path, creator_name, time_created, last_modified)
+def create_dagr(file_path, parent_dagr_guid, recursion_level):
+    if recursion_level < 2:
+        print ("Creating DAGR for: " + file_path)
+        guid = str(uuid.uuid4())
+        with connection.cursor() as cursor:
+            # Create a new DAGR where the default name is the selected file's name
+            cursor.execute("""
+                INSERT INTO dagr (
+                    dagr_guid, dagr_name, time_created, parent_dagr_guid
+                ) VALUES (
+                    %s, %s, %s, %s
+                )
+            """, [guid, os.path.basename(file_path), datetime.datetime.now(), parent_dagr_guid])
+        storage_path = file_path
+        if file_path.startswith("http://") or file_path.startswith("https://"):
+            r = requests.get(file_path)
+            if 'last-modified' in r.headers:
+                last_modified = format_date_from_header(r.headers['last-modified'])
+            else:
+                last_modified = None
+            creator_name = None
+            time_created = None
+        else:
+            last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+            creator_name = os.getlogin()
+            time_created = datetime.datetime.fromtimestamp(os.path.getctime(file_path))
+
+        # Create this file and parse its metadata
+        parse_file(file_path, guid, storage_path, creator_name, time_created, last_modified, create_dagr, recursion_level)
 
 def create_folder_dagr(folder_path, parent_guid):
     guid = str(uuid.uuid4())
@@ -41,7 +56,7 @@ def create_folder_dagr(folder_path, parent_guid):
         # Create a new DAGR where the default name is the folder's name
         cursor.execute("""
             INSERT INTO dagr (
-                dagr_guid, name, time_created, parent_dagr_guid
+                dagr_guid, dagr_name, time_created, parent_dagr_guid
             ) VALUES (
                 %s, %s, %s, %s
             )
@@ -53,17 +68,17 @@ def create_folder_dagr(folder_path, parent_guid):
             if os.path.isdir(file_path):
                 create_folder_dagr(file_path, guid)
             else:
-                create_dagr(file_path, guid)
+                create_dagr(file_path, guid, 0)
 
 def insert_file(request):
     # Grab the file path from the HTTP request
     file_path = request.POST['file_path']
     parent_guid = request.POST['parent_guid']
-    parent_guid_null = parent_guid.length() == 0
+    parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
         parent_guid = None
 
-    create_dagr(file_path, parent_guid)    
+    create_dagr(file_path, parent_guid, 0)    
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
@@ -72,7 +87,7 @@ def bulk_data_insert(request):
     # Grab the folder path from the HTTP request
     folder_path = request.POST['folder_path']
     parent_guid = request.POST['parent_guid']
-    parent_guid_null = parent_guid.length() == 0
+    parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
         parent_guid = None
 
@@ -85,11 +100,11 @@ def html_insert(request):
     # Grab the file path from the HTTP request
     file_path = request.POST['file_path']
     parent_guid = request.POST['parent_guid']
-    parent_guid_null = parent_guid.length() == 0
+    parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
         parent_guid = None
 
-    create_dagr(file_path, parent_guid)       
+    create_dagr(file_path, parent_guid, 0)       
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))

@@ -1,10 +1,13 @@
 import uuid
 import mutagen
 import zipfile, lxml.etree
+import requests
 
 from urllib import request
+from urllib.parse import urljoin
 from django.db import connection
 from PIL import Image
+from io import BytesIO
 from .models import *
 from html.parser import HTMLParser
 
@@ -12,7 +15,7 @@ def get_extension(file):
 	parts = file.split('.')
 	return parts[len(parts) - 1]
 
-def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_modified):
+def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_modified, create_dagr, recursion_level):
 	extension = get_extension(file)
 	# http://pillow.readthedocs.io/en/3.4.x/handbook/image-file-formats.html
 	image_extensions = ["bmp", "eps", "gif", "icns", "im", "jpeg", "jpg",
@@ -53,11 +56,15 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 	elif extension in office_extensions:
 		return parse_office(file, guid)
 	if file.startswith("http") and "://" in file:
-		return parse_html(file, guid)
+		return parse_html(file, guid, create_dagr, recursion_level)
 	return False # No parser found
 
 def parse_image(file, guid):
-	image = Image.open(file)
+	if file.startswith("http://") or file.startswith("https://"):
+		response = requests.get(file)
+		image = Image.open(BytesIO(response.content))
+	else:
+		image = Image.open(file)
 	iwidth, iheight = image.size
 	f_format = get_extension(file)
 	with connection.cursor() as cursor:
@@ -102,78 +109,108 @@ def parse_office(file, guid):
 			) VALUES (
 				%s, %s
 			)
-		""", )
+		""", [guid, title, creator])
 	return True
 
 def parse_video(file, guid):
 	pass # TODO
 
+def find_attr(attrs, attr):
+	for (name, value) in attrs:
+		if attr == name:
+			return value
+	return None
+
 class ResourceHTMLParser(HTMLParser):
 	IMAGE = 1
 	AUDIO = 2
 	VIDEO = 3
+	LINK = 4
 
-	def __init__(self, handler, guid):
+	def __init__(self, handler, guid, create_dagr, recursion_level, base_url):
 		HTMLParser.__init__(self)
 		self.handler = handler
 		self.in_video = False
 		self.in_audio = False
+		self.in_title = False
+		self.title = None
+		self.author = None
 		self.guid = guid
+		self.create_dagr = create_dagr
+		self.recursion_level = recursion_level
+		self.data  = []
+		self.base_url = base_url
 
-	def read(self, data):
-		self._lines = []
-		self.reset()
-		self.feed(data)
-		return ''.join(self._lines)
-
-	def handle_data(self, d):
-		self._lines.append(d)
-
-	def find_attr(attrs, attr):
-		for (name, value) in attrs:
-			if attr == name:
-				return value
-		return None
-
-	def handle_startag(self, tag, attrs):
+	def handle_starttag(self, tag, attrs):
+		print("start: " + tag)
 		if tag == 'img':
-			handler.add_resource(IMAGE, guid, find_attr(attrs, 'src'))
+			self.handler(self.IMAGE, self.guid, self.base_url, find_attr(attrs, 'src'), self.create_dagr, self.recursion_level)
 		if tag == 'video':
 			self.in_video = True
 		if tag == 'audio':
 			self.in_audio = True
 		if tag == 'source':
 			if self.in_video:
-				handler.add_resource(VIDEO, guid, find_attr(attrs, 'src'))
+				self.handler(self.VIDEO, self.guid, self.base_url, find_attr(attrs, 'src'), self.create_dagr, self.recursion_level)
 			if self.in_audio:
-				handler.add_resource(AUDIO, guid, find_attr(attrs, 'src'))
+				self.handler(self.AUDIO, self.guid, self.base_url, find_attr(attrs, 'src'), self.create_dagr, self.recursion_level)
+		if tag == 'a':
+			self.handler(self.LINK, self.guid, self.base_url, find_attr(attrs, 'href'), self.create_dagr, self.recursion_level)
+		if tag == 'meta':
+			name = find_attr(attrs, 'name')
+			content = find_attr(attrs, 'content')
+			if name == 'author':
+				self.author = content
+		if tag == 'title':
+			self.in_title = True
 
 
 	def handle_endtag(self, tag):
+		print("end: " + tag)
 		if tag == 'video':
 			self.in_video = False
 		if tag == 'audio':
 			self.in_audio = False
+		if tag == 'html':
+			with connection.cursor() as cursor:
+				cursor.execute("""
+					INSERT INTO document_metadata (
+						file_guid, title, authors
+					) VALUES (
+						%s, %s, %s
+					)
+				""", [self.guid, self.title, self.author])
+			self.author = None
+		if tag == 'title':
+			self.in_title = False
+
 
 	def handle_data(self, data):
-		pass
+		if self.in_title:
+			self.title = data
 
-def parse_html_resource(type, guid, file):
+def parse_html_resource(type, guid, base_url, file, create_dagr, recursion_level):
+	if file == None or file.startswith("#"):
+		return False
+	print ("Resource: " + file)
+	file = urljoin(base_url, file)
 	if type == ResourceHTMLParser.IMAGE:
-		parse_image(file, guid)
+		create_dagr(file, guid, recursion_level + 1)
 	if type == ResourceHTMLParser.AUDIO:
-		parse_audio(file, guid)
+		create_dagr(file, guid, recursion_level + 1)
 	if type == ResourceHTMLParser.VIDEO:
-		parse_video(file, guid)
+		create_dagr(file, guid, recursion_level + 1)
+	if type == ResourceHTMLParser.LINK and not file.startswith("#") and not file.startswith("mailto:"):
+		create_dagr(file, guid, recursion_level + 1)
+	return True
 
-def parse_html(file, guid):
+def parse_html(file, guid, create_dagr, recursion_level):
+	print ("Parsing HTML")
 	f = request.urlopen(file)
 	lines = f.readlines()
 	contents = ''
 	for line in lines:
 		line_utf8 = line.decode('utf8', 'ignore')
-		print(line_utf8)
 		contents += line_utf8
-	print(contents)
-	parser = ResourceHTMLParser(parse_html_resource)
+	parser = ResourceHTMLParser(parse_html_resource, guid, create_dagr, recursion_level, file)
 	parser.feed(contents)

@@ -4,3 +4,4 @@ The following python modules are used:
 - Mutagen (pip install mutagen)
 - HTML Parser (pip install HTMLParser)
 - LXML (pip install lxml)
+- Requests (pip install requests)
