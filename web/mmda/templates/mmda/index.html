@@ -48,6 +48,12 @@
     <input type="submit" value="Generate Orphan DAGR Report" />
 </form>
 
+<h1>Sterile DAGR Report</h1>
+<form action="{% url 'mmda:sterile_dagr_report' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Generate Sterile DAGR Report" />
+</form>
+
 {% if data_aggregates_list %}
     <ul>
     {% for dagr in data_aggregates_list %}

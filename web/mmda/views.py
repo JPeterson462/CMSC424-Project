@@ -176,3 +176,18 @@ def orphan_dagr_report(request):
 
     context = { 'orphan_dagrs': orphan_dagrs }
     return render(request, 'mmda/orphan_dagr_report.html', context)
+
+def sterile_dagr_report(request):
+    # Find all DataAggregates which have no child DAGRs
+    sterile_dagrs = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+        WHERE id NOT IN (
+            SELECT DISTINCT parent_dagr_id
+            FROM mmda_dataaggregate
+            WHERE parent_dagr_id IS NOT NULL
+        )
+    """)
+
+    context = { 'sterile_dagrs': sterile_dagrs }
+    return render(request, 'mmda/sterile_dagr_report.html', context)
