@@ -1,0 +1,11 @@
+{% if orphan_dagrs %}
+    <ul>
+    {% for dagr in orphan_dagrs %}
+        <li>{{ dagr.name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>There are no orphan DAGRs in the system.</p>
+{% endif %}
+
+<a href="{% url 'mmda:index' %}">Home</a>

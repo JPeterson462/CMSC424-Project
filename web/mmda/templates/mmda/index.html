@@ -42,6 +42,12 @@
     <input type="submit" value="Remove DAGR from Category" />
 </form>
 
+<h1>Orphan DAGR Report</h1>
+<form action="{% url 'mmda:orphan_dagr_report' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Generate Orphan DAGR Report" />
+</form>
+
 {% if data_aggregates_list %}
     <ul>
     {% for dagr in data_aggregates_list %}

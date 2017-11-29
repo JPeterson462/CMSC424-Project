@@ -165,3 +165,14 @@ def remove_dagr_from_category(request):
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
+
+def orphan_dagr_report(request):
+    # Find all DataAggregates which have no parent DAGRs
+    orphan_dagrs = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+        WHERE parent_dagr_id IS NULL
+    """)
+
+    context = { 'orphan_dagrs': orphan_dagrs }
+    return render(request, 'mmda/orphan_dagr_report.html', context)

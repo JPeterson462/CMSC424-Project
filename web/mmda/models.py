@@ -9,6 +9,7 @@ class DataAggregate(models.Model):
     time_created = models.DateTimeField(auto_now=True)
     files = models.ManyToManyField('FileMetadata')
     categories = models.ManyToManyField('Category')
+    parent_dagr = models.ForeignKey('self', on_delete=None, blank=True, null=True)
 
     def __str__(self):
         return "Data Aggregate: " + self.name
