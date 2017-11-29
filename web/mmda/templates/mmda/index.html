@@ -1,4 +1,19 @@
+<h1>Insert File</h1>
 <form action="{% url 'mmda:insert_file' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="file_path" name="file_path" />
+    <input type="submit" value="Create New DAGR" />
+</form>
+
+<h1>Bulk Data Entry</h1>
+<form action="{% url 'mmda:bulk_data_insert' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="folder_path" name="folder_path" />
+    <input type="submit" value="Create New DAGR" />
+</form>
+
+<h1>HTML Pages</h1>
+<form action="{% url 'mmda:html_insert' %}" method="post">
     {% csrf_token %}
     <input type="text" id="file_path" name="file_path" />
     <input type="submit" value="Create New DAGR" />

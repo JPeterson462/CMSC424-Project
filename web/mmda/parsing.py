@@ -1,7 +1,11 @@
 import uuid
 import mutagen
 
+from urllib import request
+from django.db import connection
 from PIL import Image
+from .models import *
+from html.parser import HTMLParser
 
 def get_extension(file):
 	parts = file.split('.')
@@ -22,6 +26,8 @@ def parse_file(file):
 		return parse_image(file)
 	if extension in audio_extensions:
 		return parse_audio(file)
+	if file.startswith("http") and "://" in file:
+		return parse_html(file)
 	return False # No parser found
 
 def parse_image(file):
@@ -29,12 +35,14 @@ def parse_image(file):
 	# guid = str(uuid.uuid4())
 	iwidth, iheight = image.size
 	f_format = get_extension(file)
-	metadata = ImageMetadata(
-			width = iwidth,
-			height = iheight,
-			file_format = f_format
-		)
-	metadata.save()
+	with connection.cursor() as cursor:
+		cursor.execute("""
+			INSERT INTO mmda_imagemetadata (
+				width, height, file_format
+			) VALUES (
+				%s, %s, %s
+			)
+		""", [str(iwidth), str(iheight), f_format])
 	return True
 
 def parse_audio(file):
@@ -44,11 +52,85 @@ def parse_audio(file):
 	a_length = info[1].strip()
 	b_rate = info[2].strip()
 	f_format = get_extension(file)
-	metadata = AudioMetadata(
-			length = a_length,
-			bit_rate = b_rate,
-			mono_or_stereo = 1, # TODO: determine mono vs stereo (1 = mono, 2 = stereo)
-			file_format = f_format
-		)
-	metadata.save()
+	mono_or_stereo_value = 1 # TODO: determine mono vs stereo (1 = mono, 2 = stereo)
+	with connection.cursor() as cursor:
+		cursor.execute("""
+			INSERT INTO mmda_audiometadata (
+				length, bit_rate, mono_or_stereo, file_format
+			) VALUES (
+				%s, %s, %s, %s
+			)
+		""", [str(a_length), str(b_rate), str(mono_or_stereo_value), f_format])
 	return True
+
+def parse_video(file):
+	pass # TODO
+
+class ResourceHTMLParser(HTMLParser):
+	IMAGE = 1
+	AUDIO = 2
+	VIDEO = 3
+
+	def __init__(self, handler):
+		HTMLParser.__init__(self)
+		self.handler = handler
+		self.in_video = False
+		self.in_audio = False
+
+	def read(self, data):
+		self._lines = []
+		self.reset()
+		self.feed(data)
+		return ''.join(self._lines)
+
+	def handle_data(self, d):
+		self._lines.append(d)
+
+	def find_attr(attrs, attr):
+		for (name, value) in attrs:
+			if attr == name:
+				return value
+		return None
+
+	def handle_startag(self, tag, attrs):
+		if tag == 'img':
+			handler.add_resource(IMAGE, find_attr(attrs, 'src'))
+		if tag == 'video':
+			self.in_video = True
+		if tag == 'audio':
+			self.in_audio = True
+		if tag == 'source':
+			if self.in_video:
+				handler.add_resource(VIDEO, find_attr(attrs, 'src'))
+			if self.in_audio:
+				handler.add_resource(AUDIO, find_attr(attrs, 'src'))
+
+
+	def handle_endtag(self, tag):
+		if tag == 'video':
+			self.in_video = False
+		if tag == 'audio':
+			self.in_audio = False
+
+	def handle_data(self, data):
+		pass
+
+def parse_html_resource(type, file):
+	if type == ResourceHTMLParser.IMAGE:
+		parse_image(file)
+	if type == ResourceHTMLParser.AUDIO:
+		parse_audio(file)
+	if type == ResourceHTMLParser.VIDEO:
+		parse_video(file)
+
+def parse_html(file):
+	f = request.urlopen(file)
+	lines = f.readlines()
+	contents = ''
+	for line in lines:
+		line_utf8 = line.decode('utf8', 'ignore')
+		print(line_utf8)
+		contents += line_utf8
+	print(contents)
+	parser = ResourceHTMLParser(parse_html_resource)
+	parser.feed(contents)
