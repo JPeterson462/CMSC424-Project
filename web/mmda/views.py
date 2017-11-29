@@ -13,7 +13,10 @@ from .models import DataAggregate, FileMetadata
 from .parsing import *
 
 def index(request):
-    data_aggregates_list = DataAggregate.objects.all()
+    data_aggregates_list = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+    """)
     context = { 'data_aggregates_list': data_aggregates_list }
     return render(request, 'mmda/index.html', context)
 
@@ -190,8 +193,8 @@ def orphan_dagr_report(request):
     # Find all DataAggregates which have no parent DAGRs
     orphan_dagrs = DataAggregate.objects.raw("""
         SELECT *
-        FROM mmda_dataaggregate
-        WHERE parent_dagr_id IS NULL
+        FROM dagr
+        WHERE parent_dagr_guid IS NULL
     """)
 
     context = { 'orphan_dagrs': orphan_dagrs }
@@ -201,11 +204,11 @@ def sterile_dagr_report(request):
     # Find all DataAggregates which have no child DAGRs
     sterile_dagrs = DataAggregate.objects.raw("""
         SELECT *
-        FROM mmda_dataaggregate
+        FROM dagr
         WHERE id NOT IN (
-            SELECT DISTINCT parent_dagr_id
-            FROM mmda_dataaggregate
-            WHERE parent_dagr_id IS NOT NULL
+            SELECT DISTINCT parent_dagr_guid
+            FROM dagr
+            WHERE parent_dagr_guid IS NOT NULL
         )
     """)
 
@@ -223,7 +226,7 @@ def time_range_dagr_report(request):
     # Find all DataAggregates that were created between the start and end times
     dagrs_list = DataAggregate.objects.raw("""
         SELECT *
-        FROM mmda_dataaggregate
+        FROM dagr
         WHERE time_created BETWEEN %s AND %s
     """, [start_time, end_time])
 
