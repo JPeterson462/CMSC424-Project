@@ -50,7 +50,7 @@ def create_dagr(file_path, parent_dagr_guid, recursion_level):
         # Create this file and parse its metadata
         parse_file(file_path, guid, storage_path, creator_name, time_created, last_modified, create_dagr, recursion_level)
 
-def create_folder_dagr(folder_path, parent_guid):
+def create_folder_dagr(folder_path, parent_dagr_guid):
     guid = str(uuid.uuid4())
     with connection.cursor() as cursor:
         # Create a new DAGR where the default name is the folder's name
@@ -60,7 +60,7 @@ def create_folder_dagr(folder_path, parent_guid):
             ) VALUES (
                 %s, %s, %s, %s
             )
-        """, [guid, os.path.basename(file_path), datetime.datetime.now(), parent_dagr_guid])
+        """, [guid, os.path.basename(folder_path), datetime.datetime.now(), parent_dagr_guid])
 
         # Recursively add DAGRs
         for file in os.listdir(folder_path):
@@ -113,7 +113,7 @@ def create_category(request):
     # Grab the category name from the HTTP request
     category_name = request.POST['category_name']
     parent_category_id = request.POST['parent_category_id']
-    parent_category_null = parent_category_id.length() == 0
+    parent_category_null = len(parent_category_id) == 0
     if parent_category_null:
         parent_category_id = None
     
@@ -132,20 +132,23 @@ def create_category(request):
 
 def remove_category(request):
     # Get the Category ID from the HTTP request
-    category_id = request.POST['category_id']
+    category_name = request.POST['category_id']
 
     with connection.cursor() as cursor:
         # Delete all DAGR to Category mappings that involve this category
         cursor.execute("""
-            DELETE FROM category
-            WHERE category_id = %s
-        """, [category_id])
+            DELETE FROM category_mapping
+            WHERE category_id IN (
+                SELECT category_id FROM category
+                WHERE category_name = %s
+            )
+        """, [category_name])
 
         # Delete the Category record
         cursor.execute("""
             DELETE FROM category
-            WHERE id = %s
-        """, [category_id])
+            WHERE category_name = %s
+        """, [category_name])
 
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
