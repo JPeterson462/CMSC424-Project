@@ -1,0 +1,11 @@
+{% if dagrs_list %}
+    <ul>
+    {% for dagr in dagrs_list %}
+        <li>{{ dagr.name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>There were no DAGRs found within the time range.</p>
+{% endif %}
+
+<a href="{% url 'mmda:index' %}">Home</a>

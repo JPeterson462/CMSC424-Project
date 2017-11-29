@@ -11,74 +11,74 @@ GRANT ALL ON mmdadb.* TO 'django_user'@'localhost';
 
 USE mmdadb;
 
--- Create the category and type tables
-CREATE TABLE categories (
-	category_id int,
-	category_name varchar(200),
-	parent_category int,
-	PRIMARY KEY (category_id),
-	FOREIGN KEY (parent_category) REFERENCES categories(category_id)
-);
-CREATE TABLE types (
-	document_type_id int,
-	document_type varchar(64),
-	PRIMARY KEY (document_type_id)
+CREATE TABLE image_metadata (
+	file_guid varchar(64),
+	width int,
+	height int,
+	format varchar(64),
+	FOREIGN KEY (file_guid) REFERENCES file(file_guid)
 );
 
--- Create the file and DAGR tables
-CREATE TABLE files (
+CREATE TABLE audio_metadata (
 	file_guid varchar(64),
-	file_name varchar(200),
-	storage_path varchar(500),
-	creator_name varchar(200),
-	time_created datetime,
-	last_modified datetime,
-	document_type_id int,
-	PRIMARY KEY (file_guid),
-	FOREIGN KEY (document_type_id) REFERENCES types(document_type_id)
-);
-CREATE TABLE data_aggregates (
-	dagr_guid varchar(64),
-	name varchar(200),
-	time_created datetime,
-	parent_dagr varchar(64),
-	PRIMARY KEY (dagr_guid),
-	FOREIGN KEY (parent_dagr) REFERENCES data_aggregates(dagr_guid)
+	length varchar(64),
+	bit_rate int,
+	mono_or_stereo int,
+	format varchar(64),
+	FOREIGN KEY (file_guid) REFERENCES file(file_guid)
 );
 
--- Create the metadata tables
-CREATE TABLE images (
-	file_guid varchar(64),
-	width int unsigned,
-	height int unsigned,
-	file_format varchar(64),
-	PRIMARY KEY (file_guid),
-	FOREIGN KEY (file_guid) REFERENCES files(file_guid)
-);
-CREATE TABLE audio (
-	file_guid varchar(64),
-	length varchar(64),
-	bit_rate varchar(64),
-	mono_or_stereo int unsigned,
-	file_format varchar(64),
-	PRIMARY KEY (file_guid),
-	FOREIGN KEY (file_guid) REFERENCES files(file_guid)
-);
-CREATE TABLE videos (
-	file_guid varchar(64),
-	length varchar(64),
-	file_format varchar(64),
-	PRIMARY KEY (file_guid),
-	FOREIGN KEY (file_guid) REFERENCES files(file_guid)
-);
-CREATE TABLE documents (
+CREATE TABLE document_metadata (
 	file_guid varchar(64),
 	title varchar(200),
 	authors varchar(500),
-	PRIMARY KEY (file_guid),
-	FOREIGN KEY (file_guid) REFERENCES files(file_guid)
+	FOREIGN KEY (file_guid) REFERENCES file(file_guid)
 );
-CREATE TABLE annotations (
+
+CREATE TABLE video_metadata (
+	file_guid varchar(64),
+	format varchar(64),
+	length varchar(64),
+	FOREIGN KEY (file_guid) REFERENCES file(file_guid)
+);
+
+CREATE TABLE file (
+	file_guid varchar(64),
 	dagr_guid varchar(64),
-	annotation varchar(500)
+	storage_path varchar(200),
+	creator_name varchar(100),
+	creation_time datetime,
+	last_modified datetime,
+	document_type int,
+	PRIMARY KEY (file_guid),
+	FOREIGN KEY (dagr_guid) REFERENCES dagr(dagr_guid),
+	FOREIGN KEY (document_type) REFERENCES document_type(document_type_id)
+);
+
+CREATE TABLE document_type (
+	document_type_id int,
+	document_type varchar(100)
+);
+
+CREATE TABLE dagr (
+	dagr_guid varchar(64),
+	name varchar(200),
+	time_created datetime,
+	parent_dagr_guid varchar(64),
+	PRIMARY KEY (dagr_guid),
+	FOREIGN KEY (parent_dagr_guid) REFERENCES dagr(dagr_guid)
+);
+
+CREATE TABLE category (
+	category_id int,
+	name varchar(100),
+	parent_category_id int,
+	PRIMARY KEY (category_id),
+	FOREIGN KEY (parent_category_id) REFERENCES category(category_id)
+);
+
+CREATE TABLE annotation (
+	dagr_guid varchar(64),
+	annotation varchar(500),
+	FOREIGN KEY (dagr_guid) REFERENCES dagr(dagr_guid)
 );

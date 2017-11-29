@@ -1,0 +1,11 @@
+{% if sterile_dagrs %}
+    <ul>
+    {% for dagr in sterile_dagrs %}
+        <li>{{ dagr.name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>There are no sterile DAGRs in the system.</p>
+{% endif %}
+
+<a href="{% url 'mmda:index' %}">Home</a>
