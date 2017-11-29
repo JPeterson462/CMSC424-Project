@@ -1,5 +1,6 @@
 import uuid
 import mutagen
+import zipfile, lxml.etree
 
 from urllib import request
 from django.db import connection
@@ -22,10 +23,13 @@ def parse_file(file):
 						"psd", "sgi", "tga", "wal", "xpm"]
 	# https://mutagen.readthedocs.io/en/latest/
 	audio_extensions = ["asf", "flac", "mp4", "mp3", "ogg", "ogv", "wav", "aiff"]
+	office_extensions = ["docx"]
 	if extension in image_extensions:
 		return parse_image(file)
 	if extension in audio_extensions:
 		return parse_audio(file)
+	if extension in office_extensions:
+		return parse_office(file)
 	if file.startswith("http") and "://" in file:
 		return parse_html(file)
 	return False # No parser found
@@ -61,6 +65,23 @@ def parse_audio(file):
 				%s, %s, %s, %s
 			)
 		""", [str(a_length), str(b_rate), str(mono_or_stereo_value), f_format])
+	return True
+
+def parse_office(file):
+	f_format = get_extension(file)
+	zf = zipfile.ZipFile(file)
+	doc = lxml.etree.fromstring(zf.read('docProps/core.xml'))
+	ns = {'dc': 'http://purl.org/dc/elements/1.1'}
+	creator = doc.xpath('//dc:creator', namespaces=ns)[0].text
+	title = doc.xpath('//dc:title', namespaces=ns)[0].text
+	with connection.cursor() as cursor:
+		cursor.execute("""
+			INSERT INTO mmda_documentmetadata (
+				title, creator
+			) VALUES (
+				%s, %s
+			)
+		""", )
 	return True
 
 def parse_video(file):

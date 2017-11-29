@@ -1,0 +1,16 @@
+- PPTX parsing
+- XLSX parsing
+- MP4 or MOV parsing
+- Code to determine if audio is mono or stereo
+- Code to change DAGR title
+- DAGR metadata query
+- Orphan DAGR query
+- Sterile DAGR query
+- DAGR descendents reachability query
+- DAGR ancestors reachability query
+- Connecting DAGR to existing DAGR
+- Time range DAGR report query
+- Deleting a DAGR
+- Remove duplicate content
+- Connection DAGRs to GUIDs
+- Connect bulk data entry elements to parent
