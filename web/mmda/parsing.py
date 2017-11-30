@@ -55,7 +55,7 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		return parse_audio(file, guid)
 	elif extension in office_extensions:
 		return parse_office(file, guid)
-	if file.startswith("http") and "://" in file:
+	elif file.startswith("http") and "://" in file:
 		return parse_html(file, guid, create_dagr, recursion_level)
 	return False # No parser found
 
