@@ -189,31 +189,46 @@ def remove_dagr_from_category(request):
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
 
+def dictfetchall(cursor):
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
+
 def orphan_dagr_report(request):
     # Find all DataAggregates which have no parent DAGRs
-    orphan_dagrs = DataAggregate.objects.raw("""
-        SELECT *
-        FROM dagr
-        WHERE parent_dagr_guid IS NULL
-    """)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM dagr
+            WHERE parent_dagr_guid IS NULL
+        """)
+        results = dictfetchall(cursor)
+        for result in results:
+            print(result['dagr_guid'])
 
-    context = { 'orphan_dagrs': orphan_dagrs }
-    return render(request, 'mmda/orphan_dagr_report.html', context)
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
 
 def sterile_dagr_report(request):
     # Find all DataAggregates which have no child DAGRs
-    sterile_dagrs = DataAggregate.objects.raw("""
-        SELECT *
-        FROM dagr
-        WHERE id NOT IN (
-            SELECT DISTINCT parent_dagr_guid
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
             FROM dagr
-            WHERE parent_dagr_guid IS NOT NULL
-        )
-    """)
+            WHERE dagr_guid NOT IN (
+                SELECT DISTINCT parent_dagr_guid
+                FROM dagr
+                WHERE parent_dagr_guid IS NOT NULL
+            )
+        """)
+        results = dictfetchall(cursor)
+        for result in results:
+            print(result['dagr_guid'])
 
-    context = { 'sterile_dagrs': sterile_dagrs }
-    return render(request, 'mmda/sterile_dagr_report.html', context)
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
 
 def time_range_dagr_report(request):
     # Get the start and end times from the HTTP request
@@ -224,11 +239,16 @@ def time_range_dagr_report(request):
     print(end_time)
 
     # Find all DataAggregates that were created between the start and end times
-    dagrs_list = DataAggregate.objects.raw("""
-        SELECT *
-        FROM dagr
-        WHERE time_created BETWEEN %s AND %s
-    """, [start_time, end_time])
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM dagr
+            WHERE time_created BETWEEN %s AND %s
+        """, [start_time, end_time])
+        results = dictfetchall(cursor)
+        for result in results:
+            print(result['dagr_guid'])
 
     context = { 'dagrs_list': dagrs_list }
-    return render(request, 'mmda/time_range_dagr_report.html', context)
+    # Redirect the user back to the home page
+    return HttpResponseRedirect(reverse('mmda:index'))
