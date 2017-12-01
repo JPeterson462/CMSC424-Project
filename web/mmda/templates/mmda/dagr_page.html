@@ -108,34 +108,36 @@
                     Documents
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>GUID</th>
-                                    <th>Storage Path</th>
-                                    <th>Creator Name</th>
-                                    <th>Creation Time</th>
-                                    <th>Last Modified</th>
-                                    <th>Title</th>
-                                    <th>Authors</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for metadata in document_metadata %}
+                    {% if document_metadata %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
                                     <tr>
-                                        <td>{{ metadata.file_guid }}</td>
-                                        <td>{{ metadata.storage_path }}</td>
-                                        <td>{{ metadata.creator_name }}</td>
-                                        <td>{{ metadata.creation_time }}</td>
-                                        <td>{{ metadata.last_modified }}</td>
-                                        <td>{{ metadata.title }}</td>
-                                        <td>{{ metadata.authors }}</td>
+                                        <th>GUID</th>
+                                        <th>Storage Path</th>
+                                        <th>Creator Name</th>
+                                        <th>Creation Time</th>
+                                        <th>Last Modified</th>
+                                        <th>Title</th>
+                                        <th>Authors</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {% for metadata in document_metadata %}
+                                        <tr>
+                                            <td>{{ metadata.file_guid }}</td>
+                                            <td>{{ metadata.storage_path }}</td>
+                                            <td>{{ metadata.creator_name }}</td>
+                                            <td>{{ metadata.creation_time }}</td>
+                                            <td>{{ metadata.last_modified }}</td>
+                                            <td>{{ metadata.title }}</td>
+                                            <td>{{ metadata.authors }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -147,36 +149,38 @@
                     Images
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>GUID</th>
-                                    <th>Storage Path</th>
-                                    <th>Creator Name</th>
-                                    <th>Creation Time</th>
-                                    <th>Last Modified</th>
-                                    <th>Width</th>
-                                    <th>Height</th>
-                                    <th>File Format</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for metadata in image_metadata %}
+                    {% if image_metadata %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
                                     <tr>
-                                        <td>{{ metadata.file_guid }}</td>
-                                        <td>{{ metadata.storage_path }}</td>
-                                        <td>{{ metadata.creator_name }}</td>
-                                        <td>{{ metadata.creation_time }}</td>
-                                        <td>{{ metadata.last_modified }}</td>
-                                        <td>{{ metadata.width }}</td>
-                                        <td>{{ metadata.height }}</td>
-                                        <td>{{ metadata.file_format }}</td>
+                                        <th>GUID</th>
+                                        <th>Storage Path</th>
+                                        <th>Creator Name</th>
+                                        <th>Creation Time</th>
+                                        <th>Last Modified</th>
+                                        <th>Width</th>
+                                        <th>Height</th>
+                                        <th>File Format</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {% for metadata in image_metadata %}
+                                        <tr>
+                                            <td>{{ metadata.file_guid }}</td>
+                                            <td>{{ metadata.storage_path }}</td>
+                                            <td>{{ metadata.creator_name }}</td>
+                                            <td>{{ metadata.creation_time }}</td>
+                                            <td>{{ metadata.last_modified }}</td>
+                                            <td>{{ metadata.width }}</td>
+                                            <td>{{ metadata.height }}</td>
+                                            <td>{{ metadata.file_format }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -188,38 +192,40 @@
                     Audio
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>GUID</th>
-                                    <th>Storage Path</th>
-                                    <th>Creator Name</th>
-                                    <th>Creation Time</th>
-                                    <th>Last Modified</th>
-                                    <th>Length</th>
-                                    <th>Bit Rate</th>
-                                    <th>Mono or Stereo</th>
-                                    <th>File Format</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for metadata in audio_metadata %}
+                    {% if audio_metadata %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
                                     <tr>
-                                        <td>{{ metadata.file_guid }}</td>
-                                        <td>{{ metadata.storage_path }}</td>
-                                        <td>{{ metadata.creator_name }}</td>
-                                        <td>{{ metadata.creation_time }}</td>
-                                        <td>{{ metadata.last_modified }}</td>
-                                        <td>{{ metadata.length }}</td>
-                                        <td>{{ metadata.bit_rate }}</td>
-                                        <td>{{ metadata.mono_or_stereo }}</td>
-                                        <td>{{ metadata.file_format }}</td>
+                                        <th>GUID</th>
+                                        <th>Storage Path</th>
+                                        <th>Creator Name</th>
+                                        <th>Creation Time</th>
+                                        <th>Last Modified</th>
+                                        <th>Length</th>
+                                        <th>Bit Rate</th>
+                                        <th>Mono or Stereo</th>
+                                        <th>File Format</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {% for metadata in audio_metadata %}
+                                        <tr>
+                                            <td>{{ metadata.file_guid }}</td>
+                                            <td>{{ metadata.storage_path }}</td>
+                                            <td>{{ metadata.creator_name }}</td>
+                                            <td>{{ metadata.creation_time }}</td>
+                                            <td>{{ metadata.last_modified }}</td>
+                                            <td>{{ metadata.length }}</td>
+                                            <td>{{ metadata.bit_rate }}</td>
+                                            <td>{{ metadata.mono_or_stereo }}</td>
+                                            <td>{{ metadata.file_format }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -231,34 +237,36 @@
                     Video
                 </div>
                 <div class="panel-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>GUID</th>
-                                    <th>Storage Path</th>
-                                    <th>Creator Name</th>
-                                    <th>Creation Time</th>
-                                    <th>Last Modified</th>
-                                    <th>Length</th>
-                                    <th>File Format</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for metadata in video_metadata %}
+                    {% if video_metadata %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
                                     <tr>
-                                        <td>{{ metadata.file_guid }}</td>
-                                        <td>{{ metadata.storage_path }}</td>
-                                        <td>{{ metadata.creator_name }}</td>
-                                        <td>{{ metadata.creation_time }}</td>
-                                        <td>{{ metadata.last_modified }}</td>
-                                        <td>{{ metadata.length }}</td>
-                                        <td>{{ metadata.file_format }}</td>
+                                        <th>GUID</th>
+                                        <th>Storage Path</th>
+                                        <th>Creator Name</th>
+                                        <th>Creation Time</th>
+                                        <th>Last Modified</th>
+                                        <th>Length</th>
+                                        <th>File Format</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {% for metadata in video_metadata %}
+                                        <tr>
+                                            <td>{{ metadata.file_guid }}</td>
+                                            <td>{{ metadata.storage_path }}</td>
+                                            <td>{{ metadata.creator_name }}</td>
+                                            <td>{{ metadata.creation_time }}</td>
+                                            <td>{{ metadata.last_modified }}</td>
+                                            <td>{{ metadata.length }}</td>
+                                            <td>{{ metadata.file_format }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
