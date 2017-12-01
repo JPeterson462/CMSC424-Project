@@ -21,16 +21,16 @@
         <div class="col-lg-8">
             <form action="{% url 'mmda:change_dagr_name' dagr.dagr_guid %}" method="post">
                 {% csrf_token %}
-                <input type="submit" value="Change Name" class="btn btn-outline btn-primary" style="float:left; margin-right:10px">
-                <input type="text" name="new_name" class="form-control" style="width:55%">
+                <input type="submit" value="Change Name" class="btn btn-outline btn-primary" style="float:left; margin-right:10px; width:125px">
+                <input type="text" name="new_name" class="form-control" style="width:57%">
             </form>
             
             <br/>
 
             <form action="{% url 'mmda:add_file_to_dagr' dagr.dagr_guid %}" method="post">
                 {% csrf_token %}
-                <input type="submit" value="Insert New File" class="btn btn-outline btn-success" style="float:left; margin-right:10px">
-                <input type="text" name="file_path" class="form-control" style="width:55%">
+                <input type="submit" value="Insert New File" class="btn btn-outline btn-success" style="float:left; margin-right:10px; width:125px">
+                <input type="text" name="file_path" class="form-control" style="width:57%">
             </form>
         </div>
         <div class="col-lg-4">
@@ -49,15 +49,18 @@
                 </div>
                 <div class="panel-body">
                     {% for annotation in annotations %}
-                        <button type="button" class="btn btn-outline btn-default">
-                            {{ annotation }}
+                        <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
+                            {{ annotation.annotation }}
                             <a href="#"><p class="fa fa-times"></p></a>
                         </button>
                     {% endfor %}
                 </div>
                 <div class="panel-footer">
-                    <input type="submit" value="Add Annotation" class="btn btn-primary" style="float:left; margin-right:10px">
-                    <input class="form-control" style="width:75%">
+                    <form action="{% url 'mmda:add_annotation_to_dagr' dagr.dagr_guid %}" method="post">
+                        {% csrf_token %}
+                        <input type="submit" value="Add Annotation" class="btn btn-primary" style="float:left; margin-right:10px">
+                        <input type="text" name="new_annotation" class="form-control" style="width:75%">
+                    </form>
                 </div>
             </div>
         </div>

@@ -47,6 +47,13 @@ def dagr_page(request, dagr_guid):
         dagr = dictfetchall(cursor)[0]
 
         cursor.execute("""
+            SELECT annotation
+            FROM annotation
+            WHERE dagr_guid = %s
+        """, [dagr_guid])
+        annotations = dictfetchall(cursor)
+
+        cursor.execute("""
             SELECT *
             FROM category_mapping cm
             JOIN category cs
@@ -111,7 +118,7 @@ def dagr_page(request, dagr_guid):
         context = {
             'dagr': dagr,
             'categories': categories,
-            'annotations': [ 'keywordkeyword', 'keywordkeyword', 'keywordkeyword', 'keywordkeyword' ],
+            'annotations': annotations,
             'document_metadata': document_metadata,
             'image_metadata': image_metadata,
             'audio_metadata': audio_metadata,
@@ -383,4 +390,17 @@ def add_file_to_dagr(request, dagr_guid):
     parse_file(file_path, dagr_guid, storage_path, creator_name, time_created,
                last_modified, create_dagr, recursion_level=0)
 
+    return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
+
+def add_annotation_to_dagr(request, dagr_guid):
+    new_annotation = request.POST['new_annotation']
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO annotation (
+                dagr_guid, annotation
+            ) VALUES (
+                %s, %s
+            )
+        """, [dagr_guid, new_annotation])
+    
     return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
