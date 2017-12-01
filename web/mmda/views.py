@@ -364,3 +364,23 @@ def change_dagr_name(request, dagr_guid):
         """, [new_name, dagr_guid])
 
     return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
+
+def add_file_to_dagr(request, dagr_guid):
+    storage_path = file_path = request.POST['file_path']
+    if file_path.startswith("http://") or file_path.startswith("https://"):
+        r = requests.get(file_path)
+        if 'last-modified' in r.headers:
+            last_modified = format_date_from_header(r.headers['last-modified'])
+        else:
+            last_modified = None
+        creator_name = None
+        time_created = None
+    else:
+        last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+        creator_name = os.getlogin()
+        time_created = datetime.datetime.fromtimestamp(os.path.getctime(file_path))
+    
+    parse_file(file_path, dagr_guid, storage_path, creator_name, time_created,
+               last_modified, create_dagr, recursion_level=0)
+
+    return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))

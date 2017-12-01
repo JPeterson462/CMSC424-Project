@@ -27,8 +27,11 @@
             
             <br/>
 
-            <input type="submit" value="Insert New File" class="btn btn-outline btn-success" style="float:left; margin-right:10px">
-            <input class="form-control" style="width:55%">
+            <form action="{% url 'mmda:add_file_to_dagr' dagr.dagr_guid %}" method="post">
+                {% csrf_token %}
+                <input type="submit" value="Insert New File" class="btn btn-outline btn-success" style="float:left; margin-right:10px">
+                <input type="text" name="file_path" class="form-control" style="width:55%">
+            </form>
         </div>
         <div class="col-lg-4">
             <br/>
