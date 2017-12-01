@@ -14,7 +14,7 @@ from .parsing import *
 
 def index(request):
     context = { }
-    return render(request, 'mmda/pages/index.html', context)
+    return render(request, 'mmda/index.html', context)
 
 ''' def index(request):
     data_aggregates_list = DataAggregate.objects.raw("""
