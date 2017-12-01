@@ -29,7 +29,11 @@
                     <tbody>
                         {% for dagr in dagrs_list %}
                             <tr>
-                                <td style="width:1px; white-space:nowrap"><button type="button" class="btn btn-info">View</button></td>
+                                <td style="width:1px; white-space:nowrap">
+                                    <a href="{% url 'mmda:dagr_page' dagr.id %}">
+                                        <button type="button" class="btn btn-info">View</button>
+                                    </a>
+                                </td>
                                 <td style="vertical-align:middle">{{ dagr.id }}</td>
                                 <td style="vertical-align:middle">{{ dagr.name }}</td>
                                 <td style="vertical-align:middle">{{ dagr.time_created }}</td>

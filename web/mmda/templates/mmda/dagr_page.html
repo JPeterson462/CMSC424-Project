@@ -1,0 +1,35 @@
+{% extends "mmda/base.html" %}
+
+{% load static %}
+
+{% block title %}{{ dagr.name }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">{{ dagr.name }}</h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+
+    <div class="col-lg-5">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Annotations
+            </div>
+            <div class="panel-body">
+                {% for annotation in annotations_list %}
+                    <button type="button" class="btn btn-outline btn-default">
+                        {{ annotation }}
+                        <a href="#"><p class="fa fa-times"></p></a>
+                    </button>
+                {% endfor %}
+            </div>
+            <div class="panel-footer">
+                Panel Footer
+            </div>
+        </div>
+    </div>
+    <!-- /.col-lg-4 -->
+{% endblock content %}

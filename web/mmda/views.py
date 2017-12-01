@@ -29,6 +29,16 @@ def data_aggregates(request):
     context = { 'dagrs_list': dagrs_list }
     return render(request, 'mmda/data_aggregates.html', context)
 
+def dagr_page(request, dagr_id):
+    dagr = DataAggregate.objects.raw("""
+        SELECT *
+        FROM mmda_dataaggregate
+        WHERE id = %s
+    """, [dagr_id])[0]
+    annotations_list = [ 'keywordkeyword', 'keywordkeyword', 'keywordkeyword', 'keywordkeyword' ]
+    context = { 'dagr': dagr, 'annotations_list': annotations_list }
+    return render(request, 'mmda/dagr_page.html', context)
+
 def format_date_from_header(header_date):
     return datetime.datetime.strptime(header_date, '%a, %d %b %Y %H:%M:%S %Z')
 
