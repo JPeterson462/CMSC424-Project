@@ -41,12 +41,19 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO file_instance (
-				file_guid, dagr_guid, storage_path, creator_name, creation_time,
+				file_guid, storage_path, creator_name, creation_time,
 				last_modified, document_type
 			) VALUES (
-				%s, %s, %s, %s, %s, %s, %s
+				%s, %s, %s, %s, %s, %s
 			)
-		""", [guid, dagr_guid, storage_path, creator_name, creation_time, last_modified, document_type])
+		""", [guid, storage_path, creator_name, creation_time, last_modified, document_type])
+		cursor.execute("""
+			INSERT INTO file_dagr_mapping (
+				file_guid, dagr_guid
+			) VALUES (
+				%s, %s
+			)
+		""", [guid, dagr_guid])
 	if extension in image_extensions:
 		return parse_image(file, guid)
 	elif extension in video_extensions:
