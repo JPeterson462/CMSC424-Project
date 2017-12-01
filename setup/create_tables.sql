@@ -4,13 +4,13 @@ DROP TABLE IF EXISTS image_metadata;
 DROP TABLE IF EXISTS audio_metadata;
 DROP TABLE IF EXISTS document_metadata;
 DROP TABLE IF EXISTS video_metadata;
-DROP TABLE IF EXISTS file_instance;
-DROP TABLE IF EXISTS document_type;
-DROP TABLE IF EXISTS dagr;
 DROP TABLE IF EXISTS file_dagr_mapping;
-DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS category_mapping;
 DROP TABLE IF EXISTS annotation;
+DROP TABLE IF EXISTS dagr;
+DROP TABLE IF EXISTS file_instance;
+DROP TABLE IF EXISTS document_type;
+DROP TABLE IF EXISTS category;
 
 CREATE TABLE document_type (
 	document_type_id int,
@@ -27,7 +27,7 @@ INSERT INTO document_type (	document_type_id, document_type ) VALUES ( 4, "Video
 CREATE TABLE dagr (
 	dagr_guid varchar(64),
 	dagr_name varchar(200),
-	time_created datetime,
+	time_created datetime default current_timestamp,
 	parent_dagr_guid varchar(64),
 	PRIMARY KEY (dagr_guid),
 	FOREIGN KEY (parent_dagr_guid) REFERENCES dagr(dagr_guid)

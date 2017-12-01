@@ -25,7 +25,14 @@ def index(request):
     return render(request, 'mmda/index.html', context) '''
 
 def data_aggregates(request):
-    dagrs_list = DataAggregate.objects.all()
+    dagrs_list = []
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM dagr
+        """)
+        dagrs_list = dictfetchall(cursor)
+
     context = { 'dagrs_list': dagrs_list }
     return render(request, 'mmda/data_aggregates.html', context)
 
@@ -45,7 +52,7 @@ def format_date_from_header(header_date):
 def create_dagr(file_path, parent_dagr_guid, recursion_level):
     if recursion_level < 2:
         print ("Creating DAGR for: " + file_path)
-        guid = str(uuid.uuid4())
+        dagr_guid = str(uuid.uuid4())
         with connection.cursor() as cursor:
             # Create a new DAGR where the default name is the selected file's name
             cursor.execute("""
@@ -54,7 +61,7 @@ def create_dagr(file_path, parent_dagr_guid, recursion_level):
                 ) VALUES (
                     %s, %s, %s, %s
                 )
-            """, [guid, os.path.basename(file_path), datetime.datetime.now(), parent_dagr_guid])
+            """, [dagr_guid, os.path.basename(file_path), datetime.datetime.now(), parent_dagr_guid])
         storage_path = file_path
         if file_path.startswith("http://") or file_path.startswith("https://"):
             r = requests.get(file_path)
@@ -70,7 +77,7 @@ def create_dagr(file_path, parent_dagr_guid, recursion_level):
             time_created = datetime.datetime.fromtimestamp(os.path.getctime(file_path))
 
         # Create this file and parse its metadata
-        parse_file(file_path, guid, storage_path, creator_name, time_created, last_modified, create_dagr, recursion_level)
+        parse_file(file_path, dagr_guid, storage_path, creator_name, time_created, last_modified, create_dagr, recursion_level)
 
 def create_folder_dagr(folder_path, parent_dagr_guid):
     guid = str(uuid.uuid4())
@@ -95,15 +102,17 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
 def insert_file(request):
     # Grab the file path from the HTTP request
     file_path = request.POST['file_path']
-    parent_guid = request.POST['parent_guid']
+    parent_guid = request.POST['parent_dagr_guid']
     parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
         parent_guid = None
 
+    print(parent_guid)
+
     create_dagr(file_path, parent_guid, 0)    
 
     # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    return HttpResponseRedirect(reverse('mmda:data_aggregates'))
 
 def bulk_data_insert(request):
     # Grab the folder path from the HTTP request
