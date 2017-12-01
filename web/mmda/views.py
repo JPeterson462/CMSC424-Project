@@ -89,7 +89,7 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
             ) VALUES (
                 %s, %s, %s, %s
             )
-        """, [guid, os.path.basename(folder_path), datetime.datetime.now(), parent_dagr_guid])
+        """, [guid, os.path.basename(folder_path) + '/', datetime.datetime.now(), parent_dagr_guid])
 
         # Recursively add DAGRs
         for file in os.listdir(folder_path):
@@ -107,8 +107,6 @@ def insert_file(request):
     if parent_guid_null:
         parent_guid = None
 
-    print(parent_guid)
-
     create_dagr(file_path, parent_guid, 0)    
 
     # Redirect the user back to the home page
@@ -117,7 +115,7 @@ def insert_file(request):
 def bulk_data_insert(request):
     # Grab the folder path from the HTTP request
     folder_path = request.POST['folder_path']
-    parent_guid = request.POST['parent_guid']
+    parent_guid = request.POST['parent_dagr_guid']
     parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
         parent_guid = None
@@ -125,7 +123,7 @@ def bulk_data_insert(request):
     create_folder_dagr(folder_path, parent_guid)
 
     # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    return HttpResponseRedirect(reverse('mmda:data_aggregates'))
 
 def html_insert(request):
     # Grab the file path from the HTTP request
