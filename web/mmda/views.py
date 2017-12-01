@@ -13,12 +13,16 @@ from .models import DataAggregate, FileMetadata
 from .parsing import *
 
 def index(request):
+    context = { }
+    return render(request, 'mmda/pages/index.html', context)
+
+''' def index(request):
     data_aggregates_list = DataAggregate.objects.raw("""
         SELECT *
         FROM mmda_dataaggregate
     """)
     context = { 'data_aggregates_list': data_aggregates_list }
-    return render(request, 'mmda/index.html', context)
+    return render(request, 'mmda/index.html', context) '''
 
 def format_date_from_header(header_date):
     return datetime.datetime.strptime(header_date, '%a, %d %b %Y %H:%M:%S %Z')
