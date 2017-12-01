@@ -36,14 +36,89 @@ def data_aggregates(request):
     context = { 'dagrs_list': dagrs_list }
     return render(request, 'mmda/data_aggregates.html', context)
 
-def dagr_page(request, dagr_id):
-    dagr = DataAggregate.objects.raw("""
-        SELECT *
-        FROM mmda_dataaggregate
-        WHERE id = %s
-    """, [dagr_id])[0]
-    annotations_list = [ 'keywordkeyword', 'keywordkeyword', 'keywordkeyword', 'keywordkeyword' ]
-    context = { 'dagr': dagr, 'annotations_list': annotations_list }
+def dagr_page(request, dagr_guid):
+    context = {}
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM dagr
+            WHERE dagr_guid = %s
+        """, [dagr_guid])
+        dagr = dictfetchall(cursor)[0]
+
+        cursor.execute("""
+            SELECT *
+            FROM category_mapping cm
+            JOIN category cs
+                ON cm.category_id = cs.category_id
+            WHERE cm.dagr_guid = %s
+        """, [dagr_guid])
+        categories = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_dagr_mapping fdm
+            JOIN file_instance fi
+                ON fdm.file_guid = fi.file_guid
+            JOIN document_metadata dm
+                ON fi.file_guid = dm.file_guid
+            WHERE fdm.dagr_guid = %s
+        """, [dagr_guid])
+        document_metadata = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_dagr_mapping fdm
+            JOIN file_instance fi
+                ON fdm.file_guid = fi.file_guid
+            JOIN image_metadata im
+                ON fi.file_guid = im.file_guid
+            WHERE fdm.dagr_guid = %s
+        """, [dagr_guid])
+        image_metadata = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_dagr_mapping fdm
+            JOIN file_instance fi
+                ON fdm.file_guid = fi.file_guid
+            JOIN audio_metadata am
+                ON fi.file_guid = am.file_guid
+            WHERE fdm.dagr_guid = %s
+        """, [dagr_guid])
+        audio_metadata = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_dagr_mapping fdm
+            JOIN file_instance fi
+                ON fdm.file_guid = fi.file_guid
+            JOIN video_metadata vm
+                ON fi.file_guid = vm.file_guid
+            WHERE fdm.dagr_guid = %s
+        """, [dagr_guid])
+        video_metadata = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_dagr_mapping fdm
+            JOIN file_instance fi
+                ON fdm.file_guid = fi.file_guid
+            WHERE fdm.dagr_guid = %s AND fi.document_type = 0
+        """, [dagr_guid])
+        other_metadata = dictfetchall(cursor)
+
+        context = {
+            'dagr': dagr,
+            'categories': categories,
+            'annotations': [ 'keywordkeyword', 'keywordkeyword', 'keywordkeyword', 'keywordkeyword' ],
+            'document_metadata': document_metadata,
+            'image_metadata': image_metadata,
+            'audio_metadata': audio_metadata,
+            'video_metadata': video_metadata,
+            'other_metadata': other_metadata
+        }
+
     return render(request, 'mmda/dagr_page.html', context)
 
 def format_date_from_header(header_date):
@@ -278,3 +353,14 @@ def time_range_dagr_report(request):
     context = { 'dagrs_list': dagrs_list }
     # Redirect the user back to the home page
     return HttpResponseRedirect(reverse('mmda:index'))
+
+def change_dagr_name(request, dagr_guid):
+    new_name = request.POST['new_name']
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE dagr
+            SET dagr_name = %s
+            WHERE dagr_guid = %s
+        """, [new_name, dagr_guid])
+
+    return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))

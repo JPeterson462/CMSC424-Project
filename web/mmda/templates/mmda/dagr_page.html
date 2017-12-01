@@ -2,12 +2,12 @@
 
 {% load static %}
 
-{% block title %}{{ dagr.name }}{% endblock %}
+{% block title %}{{ dagr.dagr_name }}{% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="col-lg-11">
-            <h1 class="page-header">{{ dagr.name }}</h1>
+            <h1 class="page-header">{{ dagr.dagr_name }}</h1>
         </div>
         <!-- /.col-lg-10 -->
         <div class="col-lg-1">
@@ -19,9 +19,14 @@
 
     <div class="row">
         <div class="col-lg-8">
-            <input type="submit" value="Change Name" class="btn btn-outline btn-primary" style="float:left; margin-right:10px">
-            <input class="form-control" style="width:55%">
+            <form action="{% url 'mmda:change_dagr_name' dagr.dagr_guid %}" method="post">
+                {% csrf_token %}
+                <input type="submit" value="Change Name" class="btn btn-outline btn-primary" style="float:left; margin-right:10px">
+                <input type="text" name="new_name" class="form-control" style="width:55%">
+            </form>
+            
             <br/>
+
             <input type="submit" value="Insert New File" class="btn btn-outline btn-success" style="float:left; margin-right:10px">
             <input class="form-control" style="width:55%">
         </div>
@@ -40,7 +45,7 @@
                     Annotations
                 </div>
                 <div class="panel-body">
-                    {% for annotation in annotations_list %}
+                    {% for annotation in annotations %}
                         <button type="button" class="btn btn-outline btn-default">
                             {{ annotation }}
                             <a href="#"><p class="fa fa-times"></p></a>
@@ -59,6 +64,12 @@
                     Categories
                 </div>
                 <div class="panel-body">
+                    {% for category in categories %}
+                        <button type="button" class="btn btn-outline btn-default">
+                            {{ category.category_name }}
+                            <a href="#"><p class="fa fa-times"></p></a>
+                        </button>
+                    {% endfor %}
                 </div>
                 <div class="panel-footer">
                     <input type="submit" value="Add Category" class="btn btn-warning" style="float:left; margin-right:10px">
@@ -94,7 +105,17 @@
                                 </tr>
                             </thead>
                             <tbody>
-
+                                {% for metadata in document_metadata %}
+                                    <tr>
+                                        <td>{{ metadata.file_guid }}</td>
+                                        <td>{{ metadata.storage_path }}</td>
+                                        <td>{{ metadata.creator_name }}</td>
+                                        <td>{{ metadata.creation_time }}</td>
+                                        <td>{{ metadata.last_modified }}</td>
+                                        <td>{{ metadata.title }}</td>
+                                        <td>{{ metadata.authors }}</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -124,7 +145,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                {% for metadata in image_metadata %}
+                                    <tr>
+                                        <td>{{ metadata.file_guid }}</td>
+                                        <td>{{ metadata.storage_path }}</td>
+                                        <td>{{ metadata.creator_name }}</td>
+                                        <td>{{ metadata.creation_time }}</td>
+                                        <td>{{ metadata.last_modified }}</td>
+                                        <td>{{ metadata.width }}</td>
+                                        <td>{{ metadata.height }}</td>
+                                        <td>{{ metadata.file_format }}</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -155,7 +187,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                {% for metadata in audio_metadata %}
+                                    <tr>
+                                        <td>{{ metadata.file_guid }}</td>
+                                        <td>{{ metadata.storage_path }}</td>
+                                        <td>{{ metadata.creator_name }}</td>
+                                        <td>{{ metadata.creation_time }}</td>
+                                        <td>{{ metadata.last_modified }}</td>
+                                        <td>{{ metadata.length }}</td>
+                                        <td>{{ metadata.bit_rate }}</td>
+                                        <td>{{ metadata.mono_or_stereo }}</td>
+                                        <td>{{ metadata.file_format }}</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -184,7 +228,17 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                {% for metadata in video_metadata %}
+                                    <tr>
+                                        <td>{{ metadata.file_guid }}</td>
+                                        <td>{{ metadata.storage_path }}</td>
+                                        <td>{{ metadata.creator_name }}</td>
+                                        <td>{{ metadata.creation_time }}</td>
+                                        <td>{{ metadata.last_modified }}</td>
+                                        <td>{{ metadata.length }}</td>
+                                        <td>{{ metadata.file_format }}</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -211,7 +265,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                {% for metadata in other_metadata %}
+                                    <tr>
+                                        <td>{{ metadata.file_guid }}</td>
+                                        <td>{{ metadata.storage_path }}</td>
+                                        <td>{{ metadata.creator_name }}</td>
+                                        <td>{{ metadata.creation_time }}</td>
+                                        <td>{{ metadata.last_modified }}</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
