@@ -54,12 +54,11 @@ def dagr_page(request, dagr_guid):
         annotations = dictfetchall(cursor)
 
         cursor.execute("""
-            SELECT *
-            FROM category_mapping cm
-            JOIN category cs
-                ON cm.category_id = cs.category_id
-            WHERE cm.dagr_guid = %s
-        """, [dagr_guid])
+            SELECT cs.category_id, cs.category_name, cm.dagr_guid
+            FROM category cs
+            LEFT JOIN category_mapping cm
+                ON cs.category_id = cm.category_id
+        """)
         categories = dictfetchall(cursor)
 
         cursor.execute("""
@@ -403,4 +402,27 @@ def add_annotation_to_dagr(request, dagr_guid):
             )
         """, [dagr_guid, new_annotation])
     
+    return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
+
+def remove_annotation_from_dagr(request, dagr_guid, annotation):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            DELETE FROM annotation
+            WHERE dagr_guid = %s AND annotation = %s
+        """, [dagr_guid, annotation])
+
+    return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
+
+def add_category_to_dagr(request, dagr_guid):
+    category_id = request.POST['category_id']
+    print(category_id)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO category_mapping (
+                dagr_guid, category_id
+            ) VALUES (
+                %s, %s
+            )
+        """, [dagr_guid, category_id])
+
     return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))

@@ -48,12 +48,16 @@
                     Annotations
                 </div>
                 <div class="panel-body">
-                    {% for annotation in annotations %}
-                        <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
-                            {{ annotation.annotation }}
-                            <a href="#"><p class="fa fa-times"></p></a>
-                        </button>
-                    {% endfor %}
+                    {% if annotations %}
+                        {% for annotation in annotations %}
+                            <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
+                                {{ annotation.annotation }}
+                                <a href="{% url 'mmda:remove_annotation_from_dagr' dagr.dagr_guid annotation.annotation %}"><p class="fa fa-times"></p></a>
+                            </button>
+                        {% endfor %}
+                    {% else %}
+                        <b>This DAGR has no annotations.</b>
+                    {% endif %}
                 </div>
                 <div class="panel-footer">
                     <form action="{% url 'mmda:add_annotation_to_dagr' dagr.dagr_guid %}" method="post">
@@ -70,16 +74,31 @@
                     Categories
                 </div>
                 <div class="panel-body">
-                    {% for category in categories %}
-                        <button type="button" class="btn btn-outline btn-default">
-                            {{ category.category_name }}
-                            <a href="#"><p class="fa fa-times"></p></a>
-                        </button>
-                    {% endfor %}
+                    {% if categories %}
+                        {% for category in categories %}
+                            {% if category.dagr_guid == dagr.dagr_guid %}
+                                <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
+                                    {{ category.category_name }}
+                                    <a href="#" style="color:rgb(255, 174, 0)"><p class="fa fa-times"></p></a>
+                                </button>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <b>This DAGR is not in any categories.</b>
+                    {% endif %}
                 </div>
                 <div class="panel-footer">
-                    <input type="submit" value="Add Category" class="btn btn-warning" style="float:left; margin-right:10px">
-                    <input class="form-control" style="width:75%">
+                    <form action="{% url 'mmda:add_category_to_dagr' dagr.dagr_guid %}" method="post">
+                        {% csrf_token %}
+                        <input type="submit" value="Add Category" class="btn btn-warning" style="float:left; margin-right:10px">
+                        <select name="category_id" class="form-control" style="width:75%">
+                            {% for category in categories %}
+                                {% if category.dagr_guid != dagr.dagr_guid %}
+                                    <option value="{{ category.category_id }}">{{ category.category_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </form>
                 </div>
             </div>
         </div>
