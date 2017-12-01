@@ -37,7 +37,8 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		document_type = 3
 	elif extension in office_extensions:
 		document_type = 1
-	guid = str(uuid.uuid4())
+	file_guid = str(uuid.uuid4())
+	print(dagr_guid)
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO file_instance (
@@ -46,22 +47,22 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 			) VALUES (
 				%s, %s, %s, %s, %s, %s
 			)
-		""", [guid, storage_path, creator_name, creation_time, last_modified, document_type])
+		""", [file_guid, storage_path, creator_name, creation_time, last_modified, document_type])
 		cursor.execute("""
 			INSERT INTO file_dagr_mapping (
 				file_guid, dagr_guid
 			) VALUES (
 				%s, %s
 			)
-		""", [guid, dagr_guid])
+		""", [file_guid, dagr_guid])
 	if extension in image_extensions:
-		return parse_image(file, guid)
+		return parse_image(file, file_guid)
 	elif extension in video_extensions:
-		return parse_video(file, guid)
+		return parse_video(file, file_guid)
 	elif extension in audio_extensions:
-		return parse_audio(file, guid)
+		return parse_audio(file, file_guid)
 	elif extension in office_extensions:
-		return parse_office(file, guid)
+		return parse_office(file, file_guid)
 	elif file.startswith("http") and "://" in file:
 		return parse_html(file, guid, create_dagr, recursion_level)
 	return False # No parser found

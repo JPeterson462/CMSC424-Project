@@ -1,5 +1,7 @@
 {% extends "mmda/base.html" %}
 
+{% load static %}
+
 {% block title %}Data Aggregates{% endblock %}
 
 {% block content %}
@@ -9,4 +11,114 @@
         </div>
         <!-- /.col-lg-12 -->
     </div>
+    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Insert New File
+                </div>
+                <form action="{% url 'mmda:insert_file' %}" method="post">
+                    {% csrf_token %}
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label>File Path</label>
+                            <input type="text" name="file_path" class="form-control" placeholder="Enter path to file here">
+                        </div>
+                        <div class="form-group">
+                            <label>Parent DAGR GUID</label>
+                            <input type="text" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here">
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <input type="submit" value="Create New DAGR" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-green">
+                <div class="panel-heading">
+                    Bulk Data Insert
+                </div>
+                <form action="{% url 'mmda:bulk_data_insert' %}" method="post">
+                    {% csrf_token %}
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label>Folder Path</label>
+                            <input type="text" name="folder_path" class="form-control" placeholder="Enter path to folder here">
+                        </div>
+                        <div class="form-group">
+                            <label>Parent DAGR GUID</label>
+                            <input type="text" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here">
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <input type="submit" value="Create New DAGR" class="btn btn-success" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="table-responsive">
+                <table width="100%" class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>GUID</th>
+                            <th>Name</th>
+                            <th>Time Created</th>
+                            <th>Parent GUID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dagr in dagrs_list %}
+                            <tr>
+                                <td style="width:1px; white-space:nowrap">
+                                    <a href="{% url 'mmda:dagr_page' dagr.dagr_guid %}">
+                                        <button type="button" class="btn btn-info">View</button>
+                                    </a>
+                                </td>
+                                <td style="vertical-align:middle">{{ dagr.dagr_guid }}</td>
+                                <td style="vertical-align:middle">{{ dagr.dagr_name }}</td>
+                                <td style="vertical-align:middle">{{ dagr.time_created }}</td>
+                                {% if dagr.parent_dagr_guid %}
+                                    <td style="vertical-align:middle">{{ dagr.parent_dagr_guid }}</td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.table-responsive -->
+        </div>
+        <!-- /.col-lg-6 -->
+    </div>
+    <!-- /.row -->
 {% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <!-- DataTables JavaScript -->
+    <script src="{% static 'mmda/vendor/datatables/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'mmda/vendor/datatables-plugins/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'mmda/vendor/datatables-responsive/dataTables.responsive.js' %}"></script>
+
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+        $(document).ready(function() {
+            $('#dataTables-example').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+{% endblock scripts %}
