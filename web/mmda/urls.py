@@ -21,5 +21,6 @@ urlpatterns = [
     url(r'^add_file_to_dagr/(?P<dagr_guid>[0-9a-z\-]+)/$', views.add_file_to_dagr, name='add_file_to_dagr'),
     url(r'^add_annotation_to_dagr/(?P<dagr_guid>[0-9a-z\-]+)/$', views.add_annotation_to_dagr, name='add_annotation_to_dagr'),
     url(r'^remove_annotation_from_dagr/(?P<dagr_guid>[0-9a-z\-]+)/(?P<annotation>[\s\S]*)/$', views.remove_annotation_from_dagr, name='remove_annotation_from_dagr'),
+    url(r'^remove_category_from_dagr/(?P<dagr_guid>[0-9a-z\-]+)/(?P<category_id>[0-9]+)/$', views.remove_category_from_dagr, name='remove_category_from_dagr'),
     url(r'^add_category_to_dagr/(?P<dagr_guid>[0-9a-z\-]+)/$', views.add_category_to_dagr, name='add_category_to_dagr')
 ]

@@ -415,7 +415,6 @@ def remove_annotation_from_dagr(request, dagr_guid, annotation):
 
 def add_category_to_dagr(request, dagr_guid):
     category_id = request.POST['category_id']
-    print(category_id)
     with connection.cursor() as cursor:
         cursor.execute("""
             INSERT INTO category_mapping (
@@ -423,6 +422,15 @@ def add_category_to_dagr(request, dagr_guid):
             ) VALUES (
                 %s, %s
             )
+        """, [dagr_guid, category_id])
+
+    return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
+
+def remove_category_from_dagr(request, dagr_guid, category_id):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            DELETE FROM category_mapping
+            WHERE dagr_guid = %s AND category_id = %s
         """, [dagr_guid, category_id])
 
     return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
