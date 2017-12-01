@@ -13,23 +13,40 @@
     </div>
     <!-- /.row -->
 
-    <div class="col-lg-5">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                Annotations
-            </div>
-            <div class="panel-body">
-                {% for annotation in annotations_list %}
-                    <button type="button" class="btn btn-outline btn-default">
-                        {{ annotation }}
-                        <a href="#"><p class="fa fa-times"></p></a>
-                    </button>
-                {% endfor %}
-            </div>
-            <div class="panel-footer">
-                Panel Footer
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Annotations
+                </div>
+                <div class="panel-body">
+                    {% for annotation in annotations_list %}
+                        <button type="button" class="btn btn-outline btn-default">
+                            {{ annotation }}
+                            <a href="#"><p class="fa fa-times"></p></a>
+                        </button>
+                    {% endfor %}
+                </div>
+                <div class="panel-footer">
+                    <input type="submit" value="Add Annotation" class="btn btn-primary" style="float:left; margin-right:10px">
+                    <input class="form-control" style="width:50%">
+                </div>
             </div>
         </div>
+        <div class="col-lg-6">
+            <div class="panel panel-yellow">
+                <div class="panel-heading">
+                    Categories
+                </div>
+                <div class="panel-body">
+                </div>
+                <div class="panel-footer">
+                    <input type="submit" value="Add Category" class="btn btn-warning" style="float:left; margin-right:10px">
+                    <input class="form-control" style="width:50%">
+                </div>
+            </div>
+            <!-- /.col-lg-4 -->
+        </div>
     </div>
-    <!-- /.col-lg-4 -->
+    <!-- /.col-lg-5 -->
 {% endblock content %}
