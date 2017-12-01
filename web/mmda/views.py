@@ -24,6 +24,10 @@ def index(request):
     context = { 'data_aggregates_list': data_aggregates_list }
     return render(request, 'mmda/index.html', context) '''
 
+def data_aggregates(request):
+    context = {}
+    return render(request, 'mmda/data_aggregates.html', context)
+
 def format_date_from_header(header_date):
     return datetime.datetime.strptime(header_date, '%a, %d %b %Y %H:%M:%S %Z')
 
