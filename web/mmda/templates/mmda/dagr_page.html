@@ -6,16 +6,36 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-11">
             <h1 class="page-header">{{ dagr.name }}</h1>
         </div>
-        <!-- /.col-lg-12 -->
+        <!-- /.col-lg-10 -->
+        <div class="col-lg-1">
+            <button type="button" class="btn btn-danger btn-circle btn-lg" style="margin-top:40px">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
     </div>
-    <!-- /.row -->
+
+    <div class="row">
+        <div class="col-lg-8">
+            <input type="submit" value="Change Name" class="btn btn-outline btn-primary" style="float:left; margin-right:10px">
+            <input class="form-control" style="width:55%">
+            <br/>
+            <input type="submit" value="Insert New File" class="btn btn-outline btn-success" style="float:left; margin-right:10px">
+            <input class="form-control" style="width:55%">
+        </div>
+        <div class="col-lg-4">
+            <br/>
+            <button type="button" class="btn btn-primary btn-lg">Reachability Report</button>
+        </div>
+    </div>
+
+    <br/>
 
     <div class="row">
         <div class="col-lg-6">
-            <div class="panel panel-primary">
+            <div class="panel panel-default">
                 <div class="panel-heading">
                     Annotations
                 </div>
@@ -29,12 +49,12 @@
                 </div>
                 <div class="panel-footer">
                     <input type="submit" value="Add Annotation" class="btn btn-primary" style="float:left; margin-right:10px">
-                    <input class="form-control" style="width:50%">
+                    <input class="form-control" style="width:75%">
                 </div>
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="panel panel-yellow">
+            <div class="panel panel-default">
                 <div class="panel-heading">
                     Categories
                 </div>
@@ -42,11 +62,194 @@
                 </div>
                 <div class="panel-footer">
                     <input type="submit" value="Add Category" class="btn btn-warning" style="float:left; margin-right:10px">
-                    <input class="form-control" style="width:50%">
+                    <input class="form-control" style="width:75%">
                 </div>
             </div>
-            <!-- /.col-lg-4 -->
         </div>
     </div>
-    <!-- /.col-lg-5 -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h2>File Metadata</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Documents
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>GUID</th>
+                                    <th>Storage Path</th>
+                                    <th>Creator Name</th>
+                                    <th>Creation Time</th>
+                                    <th>Last Modified</th>
+                                    <th>Title</th>
+                                    <th>Authors</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-green">
+                <div class="panel-heading">
+                    Images
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>GUID</th>
+                                    <th>Storage Path</th>
+                                    <th>Creator Name</th>
+                                    <th>Creation Time</th>
+                                    <th>Last Modified</th>
+                                    <th>Width</th>
+                                    <th>Height</th>
+                                    <th>File Format</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-yellow">
+                <div class="panel-heading">
+                    Audio
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>GUID</th>
+                                    <th>Storage Path</th>
+                                    <th>Creator Name</th>
+                                    <th>Creation Time</th>
+                                    <th>Last Modified</th>
+                                    <th>Length</th>
+                                    <th>Bit Rate</th>
+                                    <th>Mono or Stereo</th>
+                                    <th>File Format</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-red">
+                <div class="panel-heading">
+                    Video
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>GUID</th>
+                                    <th>Storage Path</th>
+                                    <th>Creator Name</th>
+                                    <th>Creation Time</th>
+                                    <th>Last Modified</th>
+                                    <th>Length</th>
+                                    <th>File Format</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Other Files
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>GUID</th>
+                                    <th>Storage Path</th>
+                                    <th>Creator Name</th>
+                                    <th>Creation Time</th>
+                                    <th>Last Modified</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h2>Child DAGRs</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>GUID</th>
+                                    <th>Name</th>
+                                    <th>Time Created</th>
+                                    <th>Parent GUID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
 {% endblock content %}
