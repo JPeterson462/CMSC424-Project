@@ -163,6 +163,7 @@
     </div>
     <!-- /#wrapper -->
 
+    {% block scripts %}
     <!-- jQuery -->
     <script src="{% static 'mmda/vendor/jquery/jquery.min.js' %}"></script>
     
@@ -179,6 +180,7 @@
 
     <!-- Custom Theme JavaScript -->
     <script src="{% static 'mmda/dist/js/sb-admin-2.js' %}"></script>
+    {% endblock scripts %}
 
 </body>
 

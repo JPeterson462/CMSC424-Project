@@ -25,7 +25,8 @@ def index(request):
     return render(request, 'mmda/index.html', context) '''
 
 def data_aggregates(request):
-    context = {}
+    dagrs_list = DataAggregate.objects.all()
+    context = { 'dagrs_list': dagrs_list }
     return render(request, 'mmda/data_aggregates.html', context)
 
 def format_date_from_header(header_date):
