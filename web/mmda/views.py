@@ -114,6 +114,13 @@ def dagr_page(request, dagr_guid):
         """, [dagr_guid])
         other_metadata = dictfetchall(cursor)
 
+        cursor.execute("""
+            SELECT *
+            FROM dagr
+            WHERE parent_dagr_guid = %s
+        """, [dagr_guid])
+        child_dagrs = dictfetchall(cursor)
+
         context = {
             'dagr': dagr,
             'categories': categories,
@@ -122,7 +129,8 @@ def dagr_page(request, dagr_guid):
             'image_metadata': image_metadata,
             'audio_metadata': audio_metadata,
             'video_metadata': video_metadata,
-            'other_metadata': other_metadata
+            'other_metadata': other_metadata,
+            'child_dagrs': child_dagrs
         }
 
     return render(request, 'mmda/dagr_page.html', context)
