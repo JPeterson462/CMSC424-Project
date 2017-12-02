@@ -68,7 +68,13 @@
             <tbody>
                 {% for category in categories %}
                     <tr>
-                        <td><button type="button" class="btn btn-danger">Delete</button></td>
+                        <td>
+                            <form action="{% url 'mmda:remove_category' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                                <input type="hidden" name="category_id" value="{{ category.category_name }}">
+                            </form>
+                        </td>
                         <td>{{ category.category_name }}</td>
                         <td>
                         {% for c in categories %}

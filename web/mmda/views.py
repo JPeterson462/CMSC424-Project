@@ -325,7 +325,7 @@ def remove_category(request):
         """, [category_name])
 
     # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    return HttpResponseRedirect(reverse('mmda:categories'))
 
 def add_dagr_to_category(request):
     # Grab the category ID and DAGR ID from the HTTP request
