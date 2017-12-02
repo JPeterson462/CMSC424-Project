@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^data_aggregates/(?P<dagr_guid>[0-9a-z\-]+)/$', views.dagr_page, name='dagr_page'),
     url(r'^data_aggregates/$', views.data_aggregates, name='data_aggregates'),
+    url(r'^file_metadata/$', views.file_metadata, name='file_metadata'),
     url(r'^insert_file/$', views.insert_file, name='insert_file'),
     url(r'^bulk_data_insert/$', views.bulk_data_insert, name='bulk_data_insert'),
     url(r'^html_insert/$', views.html_insert, name='html_insert'),

@@ -454,3 +454,47 @@ def remove_category_from_dagr(request, dagr_guid, category_id):
         """, [dagr_guid, category_id])
 
     return HttpResponseRedirect(reverse('mmda:dagr_page', kwargs={'dagr_guid': dagr_guid}))
+
+def file_metadata(request):
+    context = {}
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM file_instance fi
+            JOIN document_metadata dm
+                ON fi.file_guid = dm.file_guid
+        """)
+        context['document_metadata'] = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_instance fi
+            JOIN image_metadata im
+                ON fi.file_guid = im.file_guid
+        """)
+        context['image_metadata'] = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_instance fi
+            JOIN audio_metadata am
+                ON fi.file_guid = am.file_guid
+        """)
+        context['audio_metadata'] = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_instance fi
+            JOIN video_metadata vm
+                ON fi.file_guid = vm.file_guid
+        """)
+        context['video_metadata'] = dictfetchall(cursor)
+
+        cursor.execute("""
+            SELECT *
+            FROM file_instance
+            WHERE document_type = 0
+        """)
+        context['other_metadata'] = dictfetchall(cursor)
+
+    return render(request, 'mmda/file_metadata.html', context)
