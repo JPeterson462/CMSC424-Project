@@ -24,6 +24,18 @@ def index(request):
         """)
         context['dagrs_count'] = dictfetchall(cursor)[0]['COUNT(*)']
 
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM file_instance
+        """)
+        context['files_count'] = dictfetchall(cursor)[0]['COUNT(*)']
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM category
+        """)
+        context['categories_count'] = dictfetchall(cursor)[0]['COUNT(*)']
+
     return render(request, 'mmda/index.html', context)
 
 ''' def index(request):
