@@ -2,6 +2,7 @@ import uuid
 import mutagen
 import zipfile, lxml.etree
 import requests
+import httplib2
 
 from mutagen.aiff import *
 from mutagen.asf import *
@@ -18,6 +19,7 @@ from PIL import Image
 from io import BytesIO
 from .models import *
 from html.parser import HTMLParser
+from bs4 import BeautifulSoup
 
 def get_extension(file):
 	parts = file.split('.')
@@ -48,7 +50,6 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 	elif file.startswith("http") and "://" in file:
 		document_type = 1
 	file_guid = str(uuid.uuid4())
-	print(dagr_guid)
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO file_instance (
@@ -73,8 +74,8 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		return parse_audio(file, file_guid)
 	elif extension in office_extensions:
 		return parse_office(file, file_guid)
-	elif file.startswith("http") and "://" in file:
-		return parse_html(file, guid, create_dagr, recursion_level)
+	else:
+		return parse_html(file, file_guid, create_dagr, recursion_level)
 	return False # No parser found
 
 def parse_image(file, guid):
@@ -156,99 +157,70 @@ def find_attr(attrs, attr):
 			return value
 	return None
 
-class ResourceHTMLParser(HTMLParser):
-	IMAGE = 1
-	AUDIO = 2
-	VIDEO = 3
-	LINK = 4
-
-	def __init__(self, handler, guid, create_dagr, recursion_level, base_url):
-		HTMLParser.__init__(self)
-		self.handler = handler
-		self.in_video = False
-		self.in_audio = False
-		self.in_title = False
-		self.title = None
-		self.author = None
-		self.guid = guid
-		self.create_dagr = create_dagr
-		self.recursion_level = recursion_level
-		self.data  = []
-		self.base_url = base_url
-
-	def handle_starttag(self, tag, attrs):
-		print("start: " + tag)
-		if tag == 'img':
-			self.handler(self.IMAGE, self.guid, self.base_url, find_attr(attrs, 'src'), self.create_dagr, self.recursion_level)
-		if tag == 'video':
-			self.in_video = True
-		if tag == 'audio':
-			self.in_audio = True
-		if tag == 'source':
-			if self.in_video:
-				self.handler(self.VIDEO, self.guid, self.base_url, find_attr(attrs, 'src'), self.create_dagr, self.recursion_level)
-			if self.in_audio:
-				self.handler(self.AUDIO, self.guid, self.base_url, find_attr(attrs, 'src'), self.create_dagr, self.recursion_level)
-		if tag == 'a':
-			self.handler(self.LINK, self.guid, self.base_url, find_attr(attrs, 'href'), self.create_dagr, self.recursion_level)
-		if tag == 'meta':
-			name = find_attr(attrs, 'name')
-			content = find_attr(attrs, 'content')
-			if name == 'author':
-				self.author = content
-		if tag == 'title':
-			self.in_title = True
-
-
-	def handle_endtag(self, tag):
-		print("end: " + tag)
-		if tag == 'video':
-			self.in_video = False
-		if tag == 'audio':
-			self.in_audio = False
-		if tag == 'html':
-			with connection.cursor() as cursor:
-				cursor.execute("""
-					INSERT INTO document_metadata (
-						file_guid, title, authors
-					) VALUES (
-						%s, %s, %s
-					)
-				""", [self.guid, self.title, self.author])
-			self.author = None
-		if tag == 'title':
-			self.in_title = False
-
-
-	def handle_data(self, data):
-		if self.in_title:
-			self.title = data
-
-def parse_html_resource(type, guid, base_url, file, create_dagr, recursion_level):
-	if file == None or file.startswith("#"):
-		return False
-	print ("Resource: " + file)
-	file = urljoin(base_url, file)
-	if type == ResourceHTMLParser.IMAGE:
-		create_dagr(file, guid, recursion_level + 1)
-	if type == ResourceHTMLParser.AUDIO:
-		create_dagr(file, guid, recursion_level + 1)
-	if type == ResourceHTMLParser.VIDEO:
-		create_dagr(file, guid, recursion_level + 1)
-	if type == ResourceHTMLParser.LINK and not file.startswith("#") and not file.startswith("mailto:"):
-		create_dagr(file, guid, recursion_level + 1)
-	return True
+def parse_html_page(guid, url, r, recursion_level, create_dagr):
+	soup = BeautifulSoup(r, 'html.parser')
+	html_to_load = []
+	images_to_load = []
+	videos_to_load = []
+	audio_to_load = []
+	title = ""
+	authors = ""
+	keywords = []
+	for link in soup.find_all('a'):
+		href = link.get('href')
+		if not href == None and not href in html_to_load and not href.startswith('mailto:') and not href.startswith('#'):
+			html_to_load.append(href)
+	for img in soup.find_all('img'):
+		src = img.get('src')
+		images_to_load.append(src)
+	for video in soup.find_all('video'):
+		children = video.findChildren()
+		for child in children:
+			if child.name == 'source':
+				videos_to_load.append(child.get('src'))
+	for audio in soup.find_all('audio'):
+		children = audio.findChildren()
+		for child in children:
+			if child.name == 'source':
+				audio_to_load.append(child.get('src'))
+	for t in soup.find_all('title'):
+		title = t.getText()
+	for m in soup.find_all('meta'):
+		if m.get('name') == 'author':
+			authors = m.get('content')
+		if m.get('name') == 'keywords':
+			keywords = m.get('content').split(',')
+	with connection.cursor() as cursor:
+		cursor.execute("""
+			INSERT INTO document_metadata (
+				file_guid, title, authors
+			) VALUES (
+				%s, %s, %s
+			)
+		""", [guid, title, authors])
+		for annotation in keywords:
+			cursor.execute("""
+				INSERT INTO annotation (
+					dagr_guid, annotation
+				) VALUES (
+					%s, %s
+				)
+			""", [guid, annotation])
+		for link in html_to_load:
+			print(link)
+			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+		for link in images_to_load:
+			print(link)
+			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+		for link in videos_to_load:
+			print(link)
+			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+		for link in audio_to_load:
+			print(link)
+			create_dagr(urljoin(url, link), guid, recursion_level + 1)
 
 def parse_html(file, guid, create_dagr, recursion_level):
-	try:
-		print ("Parsing HTML")
-		f = request.urlopen(file)
-		lines = f.readlines()
-		contents = ''
-		for line in lines:
-			line_utf8 = line.decode('utf8', 'ignore')
-			contents += line_utf8
-		parser = ResourceHTMLParser(parse_html_resource, guid, create_dagr, recursion_level, file)
-		parser.feed(contents)
-	except:
-		pass
+	print ("Parsing HTML")
+	http = httplib2.Http()
+	status, response = http.request(file)
+	parse_html_page(guid, file, response, recursion_level, create_dagr)

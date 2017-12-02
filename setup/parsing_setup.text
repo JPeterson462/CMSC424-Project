@@ -2,6 +2,7 @@ The following python modules are used:
 
 - Pillow (pip install Pillow)
 - Mutagen (pip install mutagen)
-- HTML Parser (pip install HTMLParser)
 - LXML (pip install lxml)
 - Requests (pip install requests)
+- Beautiful Soup (pip install beautifulsoup4)
+- httplib2 (pip install httplib2)
