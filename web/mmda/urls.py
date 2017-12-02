@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^time_range_dagr_report/$', views.time_range_dagr_report, name='time_range_dagr_report'),
     url(r'^change_dagr_name/(?P<dagr_guid>[0-9a-z\-]+)/$', views.change_dagr_name, name='change_dagr_name'),
     url(r'^add_file_to_dagr/(?P<dagr_guid>[0-9a-z\-]+)/$', views.add_file_to_dagr, name='add_file_to_dagr'),
+    url(r'^reachability_report/(?P<dagr_guid>[0-9a-z\-]+)/$', views.reachability_report, name='reachability_report'),
     url(r'^add_annotation_to_dagr/(?P<dagr_guid>[0-9a-z\-]+)/$', views.add_annotation_to_dagr, name='add_annotation_to_dagr'),
     url(r'^remove_annotation_from_dagr/(?P<dagr_guid>[0-9a-z\-]+)/(?P<annotation>[\s\S]*)/$', views.remove_annotation_from_dagr, name='remove_annotation_from_dagr'),
     url(r'^remove_category_from_dagr/(?P<dagr_guid>[0-9a-z\-]+)/(?P<category_id>[0-9]+)/$', views.remove_category_from_dagr, name='remove_category_from_dagr'),

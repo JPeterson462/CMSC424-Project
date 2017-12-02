@@ -26,7 +26,6 @@
                                     <th>GUID</th>
                                     <th>Name</th>
                                     <th>Time Created</th>
-                                    <th>Parent GUID</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -40,11 +39,6 @@
                                         <td style="vertical-align:middle">{{ dagr.dagr_guid }}</td>
                                         <td style="vertical-align:middle">{{ dagr.dagr_name }}</td>
                                         <td style="vertical-align:middle">{{ dagr.time_created }}</td>
-                                        {% if dagr.parent_dagr_guid %}
-                                            <td style="vertical-align:middle">{{ dagr.parent_dagr_guid }}</td>
-                                        {% else %}
-                                            <td></td>
-                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </tbody>
