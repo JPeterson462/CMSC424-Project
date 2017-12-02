@@ -27,9 +27,23 @@
                             <input type="text" name="file_path" class="form-control" placeholder="Enter path to file here">
                         </div>
                         <div class="form-group">
-                            <label>Parent DAGR GUID</label>
-                            <input type="text" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here">
+                            <label>Parent DAGR</label>
+                            <script>
+                                function changeParentDAGR() {
+                                    select = document.getElementById("parent1_dagr_select");
+                                    guid = select.options[select.selectedIndex].dagr;
+                                    target = document.getElementById("parent1_dagr_target");
+                                    target.value = guid;
+                                }
+                            </script>
+                            <select onchange="changeParentDAGR()" id="parent1_dagr_select" class="form-control">
+                                <option value=""></option>
+                                {% for dagr in dagrs_list %}
+                                    <option value="{{ dagr.dagr_name }}" guid="{{ dagr.dagr_guid }}">{{ dagr.dagr_name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+                        <input type="hidden" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here" id="parent1_dagr_target">
                     </div>
                     <div class="panel-footer">
                         <input type="submit" value="Create New DAGR" class="btn btn-primary" />
@@ -53,9 +67,23 @@
                             <input type="text" name="folder_path" class="form-control" placeholder="Enter path to folder here">
                         </div>
                         <div class="form-group">
-                            <label>Parent DAGR GUID</label>
-                            <input type="text" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here">
+                            <label>Parent DAGR</label>
+                            <script>
+                                function changeParentDAGR() {
+                                    select = document.getElementById("parent2_dagr_select");
+                                    guid = select.options[select.selectedIndex].dagr;
+                                    target = document.getElementById("parent2_dagr_target");
+                                    target.value = guid;
+                                }
+                            </script>
+                            <select onchange="changeParentDAGR()" id="parent2_dagr_select" class="form-control">
+                                <option value=""></option>
+                                {% for dagr in dagrs_list %}
+                                    <option value="{{ dagr.dagr_name }}" guid="{{ dagr.dagr_guid }}">{{ dagr.dagr_name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+                        <input type="hidden" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here" id="parent2_dagr_target">
                     </div>
                     <div class="panel-footer">
                         <input type="submit" value="Create New DAGR" class="btn btn-success" />

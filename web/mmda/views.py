@@ -75,7 +75,9 @@ def data_aggregates(request):
         """)
         dagrs_list = dictfetchall(cursor)
 
-    context = { 'dagrs_list': dagrs_list }
+    context = {
+        'dagrs_list': dagrs_list
+    }
     return render(request, 'mmda/data_aggregates.html', context)
 
 def dagr_page(request, dagr_guid):
