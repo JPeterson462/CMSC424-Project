@@ -1,11 +1,99 @@
-{% if dagrs_list %}
-    <ul>
-    {% for dagr in dagrs_list %}
-        <li>{{ dagr.name }}</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>There were no DAGRs found within the time range.</p>
-{% endif %}
+{% extends "mmda/base.html" %}
 
-<a href="{% url 'mmda:index' %}">Home</a>
+{% load static %}
+
+{% block title %}Time-Range DAGR Report{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Time-Range DAGR Report</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <form action="{% url 'mmda:time_range_dagr_report' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="end_time" value="{{ end_time }}">
+                <div class="form-group">
+                    <label>Current Start Time: {{ start_time }}</label>
+                    <input type="datetime-local" name="start_time" class="form-control" />
+                    <p class="help-block">
+                        <input type="submit" value="Update Start Time" class="btn btn-primary">
+                    </p>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-6">
+            <form action="{% url 'mmda:time_range_dagr_report' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="start_time" value="{{ start_time }}">
+                <div class="form-group">
+                    <label>Current End Time: {{ end_time }}</label>
+                    <input type="datetime-local" name="end_time" class="form-control" />
+                    <p class="help-block">
+                        <input type="submit" value="Update End Time" class="btn btn-primary">
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="table-responsive">
+                <table width="100%" class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>GUID</th>
+                            <th>Name</th>
+                            <th>Time Created</th>
+                            <th>Parent GUID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dagr in dagrs_list %}
+                            <tr>
+                                <td style="width:1px; white-space:nowrap">
+                                    <a href="{% url 'mmda:dagr_page' dagr.dagr_guid %}">
+                                        <button type="button" class="btn btn-success">View</button>
+                                    </a>
+                                </td>
+                                <td style="vertical-align:middle">{{ dagr.dagr_guid }}</td>
+                                <td style="vertical-align:middle">{{ dagr.dagr_name }}</td>
+                                <td style="vertical-align:middle">{{ dagr.time_created }}</td>
+                                {% if dagr.parent_dagr_guid %}
+                                    <td style="vertical-align:middle">{{ dagr.parent_dagr_guid }}</td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.table-responsive -->
+        </div>
+        <!-- /.col-lg-6 -->
+    </div>
+    <!-- /.row -->
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <!-- DataTables JavaScript -->
+    <script src="{% static 'mmda/vendor/datatables/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'mmda/vendor/datatables-plugins/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'mmda/vendor/datatables-responsive/dataTables.responsive.js' %}"></script>
+
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+        $(document).ready(function() {
+            $('#dataTables-example').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+{% endblock scripts %}

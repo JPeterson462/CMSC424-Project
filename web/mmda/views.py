@@ -3,6 +3,7 @@ import glob
 import os
 import uuid
 import requests
+import re
 
 from django.db import connection
 from django.http import HttpResponseRedirect
@@ -11,6 +12,8 @@ from django.urls import reverse
 
 from .models import DataAggregate, FileMetadata
 from .parsing import *
+
+DATETIME_FORMAT = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}")
 
 def index(request):
     context = { }
@@ -346,12 +349,23 @@ def sterile_dagr_report(request):
     return HttpResponseRedirect(reverse('mmda:index'))
 
 def time_range_dagr_report(request):
-    # Get the start and end times from the HTTP request
-    start_time = request.POST['start_time']
-    end_time = request.POST['end_time']
+    context = {}
 
-    print(start_time)
-    print(end_time)
+    start_time = datetime.datetime.min
+    start_time_str = request.POST.get('start_time', None)
+    if start_time_str:
+        if DATETIME_FORMAT.search(start_time_str):
+            start_time = datetime.datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+        else:
+            start_time = datetime.datetime.strptime(start_time_str, '%m/%d/%Y %H:%M %p')
+        
+    end_time = datetime.datetime.max
+    end_time_str = request.POST.get('end_time', None)
+    if end_time_str:
+        if DATETIME_FORMAT.search(end_time_str):
+            end_time = datetime.datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
+        else:
+            end_time = datetime.datetime.strptime(end_time_str, '%m/%d/%Y %H:%M %p')
 
     # Find all DataAggregates that were created between the start and end times
     with connection.cursor() as cursor:
@@ -360,13 +374,11 @@ def time_range_dagr_report(request):
             FROM dagr
             WHERE time_created BETWEEN %s AND %s
         """, [start_time, end_time])
-        results = dictfetchall(cursor)
-        for result in results:
-            print(result['dagr_guid'])
+        context['dagrs_list'] = dictfetchall(cursor)
 
-    context = { 'dagrs_list': dagrs_list }
-    # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    context['start_time'] = start_time.strftime('%m/%d/%Y %H:%M %p')
+    context['end_time'] = end_time.strftime('%m/%d/%Y %H:%M %p')
+    return render(request, 'mmda/time_range_dagr_report.html', context)
 
 def change_dagr_name(request, dagr_guid):
     new_name = request.POST['new_name']
