@@ -36,6 +36,34 @@ def index(request):
         """)
         context['categories_count'] = dictfetchall(cursor)[0]['COUNT(*)']
 
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM file_instance
+            WHERE document_type = 0
+            UNION ALL
+            SELECT COUNT(*)
+            FROM file_instance
+            WHERE document_type = 1
+            UNION ALL
+            SELECT COUNT(*)
+            FROM file_instance
+            WHERE document_type = 2
+            UNION ALL
+            SELECT COUNT(*)
+            FROM file_instance
+            WHERE document_type = 3
+            UNION ALL
+            SELECT COUNT(*)
+            FROM file_instance
+            WHERE document_type = 4
+        """)
+        result = dictfetchall(cursor)
+        context['other_count'] = result[0]['COUNT(*)']
+        context['document_count'] = result[1]['COUNT(*)']
+        context['image_count'] = result[2]['COUNT(*)']
+        context['audio_count'] = result[3]['COUNT(*)']
+        context['video_count'] = result[4]['COUNT(*)']
+
     return render(request, 'mmda/index.html', context)
 
 ''' def index(request):
