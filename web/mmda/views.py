@@ -554,10 +554,13 @@ def file_metadata(request):
     return render(request, 'mmda/file_metadata.html', context)
 
 def reachability_report(request, dagr_guid):
-    context = {}
-
     ancestors_or_descendants = request.POST['ancestors_or_descendants']
-    num_levels = request.POST['num_levels']
+    num_levels = int(request.POST['num_levels'])
+
+    context = {
+        'ancestors_or_descendants': ancestors_or_descendants,
+        'num_levels': num_levels
+    }
 
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -567,10 +570,22 @@ def reachability_report(request, dagr_guid):
         """, [dagr_guid])
         context['dagr'] = dictfetchall(cursor)[0]
 
+    reachable_dagr_guids = []
     if ancestors_or_descendants == 'ancestors':
-        context['reachable_dagrs'] = find_ancestors([dagr_guid], int(num_levels))
+        reachable_dagr_guids = find_ancestors([dagr_guid], num_levels)
     else:
-        print('descendants')
+        reachable_dagr_guids = find_descendants([dagr_guid], num_levels)
+
+    if reachable_dagr_guids:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM dagr
+                WHERE dagr_guid IN %s
+            """, [reachable_dagr_guids])
+            context['reachable_dagrs'] = dictfetchall(cursor)
+    else:
+        context['reachable_dagrs'] = []
 
     return render(request, 'mmda/reachability_report.html', context)
 
@@ -587,5 +602,21 @@ def find_ancestors(dagr_guids, num_levels):
                 return parent_dagr_guids + find_ancestors(parent_dagr_guids, num_levels - 1)
             else:
                 return parent_dagr_guids
+    else:
+        return []
+
+def find_descendants(dagr_guids, num_levels):
+    if num_levels > 0:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT child_dagr_guid
+                FROM dagr_mapping
+                WHERE parent_dagr_guid IN %s
+            """, [dagr_guids])
+            child_dagr_guids = [item['child_dagr_guid'] for item in dictfetchall(cursor)]
+            if child_dagr_guids:
+                return child_dagr_guids + find_descendants(child_dagr_guids, num_levels - 1)
+            else:
+                return child_dagr_guids
     else:
         return []
