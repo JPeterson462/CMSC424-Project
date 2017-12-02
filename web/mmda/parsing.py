@@ -3,6 +3,14 @@ import mutagen
 import zipfile, lxml.etree
 import requests
 
+from mutagen.aiff import *
+from mutagen.asf import *
+from mutagen.flac import *
+from mutagen.mp3 import *
+from mutagen.mp3 import JOINTSTEREO
+from mutagen.ogg import *
+from mutagen.wavpack import WavPack
+
 from urllib import request
 from urllib.parse import urljoin
 from django.db import connection
@@ -26,7 +34,7 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 						"psd", "sgi", "tga", "wal", "xpm"]
 	# https://mutagen.readthedocs.io/en/latest/
 	video_extensions = ["mp4"]
-	audio_extensions = ["asf", "flac", "mp4", "mp3", "ogg", "ogv", "wav", "aiff"]
+	audio_extensions = ["asf", "mp3", "wav", "aiff"]
 	office_extensions = ["docx"]
 	document_type = 0
 	if extension in image_extensions:
@@ -88,13 +96,30 @@ def parse_image(file, guid):
 	return True
 
 def parse_audio(file, guid):
-	t = mutagen.File(file)
-	info = t.info
-	data = info.split("'")[1].split(",")
-	a_length = info[1].strip()
-	b_rate = info[2].strip()
-	f_format = get_extension(file)
-	mono_or_stereo_value = 1 # TODO: determine mono vs stereo (1 = mono, 2 = stereo)
+	f_format = get_extension(file).lower()
+	if f_format == "asf":
+		f = ASF(file)
+		a_length =  str(f.info.length) + "s"
+		bitrate = f.info.bitrate
+		channels = self.info.channels
+	elif f_format == "aiff":
+		f = AIFF(file)
+		a_length =  str(f.info.length) + "s"
+		bitrate = f.info.bitrate
+		channels = self.info.channels
+	elif f_format == "mp3":
+		f = MP3(file)
+		a_length = str(f.info.length) + "s"
+		bitrate = f.info.bitrate
+		if f.info.mode == JOINTSTEREO:
+			channels = 2
+		else:
+			channels = 1
+	elif f_format == "wav":
+		f = WavPack(file)
+		a_length = str(f.info.length) + "s"
+		bitrate = f.info.sample_rate
+		channels = f.info.channels
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO audio_metadata (
@@ -102,7 +127,7 @@ def parse_audio(file, guid):
 			) VALUES (
 				%s, %s, %s, %s, %s
 			)
-		""", [guid, a_length, b_rate, mono_or_stereo_value, f_format])
+		""", [guid, a_length, bitrate, channels, f_format])
 	return True
 
 def parse_office(file, guid):
