@@ -2,20 +2,20 @@
 
 {% load static %}
 
-{% block title %}Sterile DAGR Report{% endblock %}
+{% block title %}Reachability Report{% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="col-lg-12">
-            <h1 class="page-header">Sterile DAGR Report</h1>
+            <h1 class="page-header">Reachability Report for {{ dagr.dagr_name }}</h1>
         </div>
     </div>
 
     <div class="row">
         <div class="col-lg-12">
-            <div class="panel panel-primary">
+            <div class="panel panel-default">
                 <div class="panel-heading">
-                    All DAGRs in this table have no child DAGRs
+                    All {{ ancestors_or_descendants }} within {{ num_levels }} levels
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive">
@@ -29,7 +29,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for dagr in sterile_dagrs %}
+                                {% for dagr in reachable_dagrs %}
                                     <tr>
                                         <td style="width:1px; white-space:nowrap">
                                             <a href="{% url 'mmda:dagr_page' dagr.dagr_guid %}">
@@ -46,23 +46,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
-{% endblock %}
-
-{% block scripts %}
-    {{ block.super }}
-    <!-- DataTables JavaScript -->
-    <script src="{% static 'mmda/vendor/datatables/js/jquery.dataTables.min.js' %}"></script>
-    <script src="{% static 'mmda/vendor/datatables-plugins/dataTables.bootstrap.min.js' %}"></script>
-    <script src="{% static 'mmda/vendor/datatables-responsive/dataTables.responsive.js' %}"></script>
-
-    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
-    <script>
-        $(document).ready(function() {
-            $('#dataTables-example').DataTable({
-                responsive: true
-            });
-        });
-    </script>
-{% endblock scripts %}
+{% endblock content %}

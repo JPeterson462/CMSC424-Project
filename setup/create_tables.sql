@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS video_metadata;
 DROP TABLE IF EXISTS file_dagr_mapping;
 DROP TABLE IF EXISTS category_mapping;
 DROP TABLE IF EXISTS annotation;
+DROP TABLE IF EXISTS dagr_mapping;
 DROP TABLE IF EXISTS dagr;
 DROP TABLE IF EXISTS file_instance;
 DROP TABLE IF EXISTS document_type;
@@ -28,9 +29,15 @@ CREATE TABLE dagr (
 	dagr_guid varchar(64),
 	dagr_name varchar(200),
 	time_created datetime default current_timestamp,
+	PRIMARY KEY (dagr_guid)
+);
+
+CREATE TABLE dagr_mapping (
 	parent_dagr_guid varchar(64),
-	PRIMARY KEY (dagr_guid),
-	FOREIGN KEY (parent_dagr_guid) REFERENCES dagr(dagr_guid)
+	child_dagr_guid varchar(64),
+	PRIMARY KEY (parent_dagr_guid, child_dagr_guid),
+	FOREIGN KEY (parent_dagr_guid) REFERENCES dagr(dagr_guid),
+	FOREIGN KEY (child_dagr_guid) REFERENCES dagr(dagr_guid)
 );
 
 CREATE TABLE file_instance (
