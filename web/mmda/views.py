@@ -66,14 +66,6 @@ def index(request):
 
     return render(request, 'mmda/index.html', context)
 
-''' def index(request):
-    data_aggregates_list = DataAggregate.objects.raw("""
-        SELECT *
-        FROM mmda_dataaggregate
-    """)
-    context = { 'data_aggregates_list': data_aggregates_list }
-    return render(request, 'mmda/index.html', context) '''
-
 def data_aggregates(request):
     dagrs_list = []
     with connection.cursor() as cursor:
@@ -362,19 +354,16 @@ def dictfetchall(cursor):
     ]
 
 def orphan_dagr_report(request):
-    # Find all DataAggregates which have no parent DAGRs
+    context = {}
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT *
             FROM dagr
             WHERE parent_dagr_guid IS NULL
         """)
-        results = dictfetchall(cursor)
-        for result in results:
-            print(result['dagr_guid'])
+        context['orphan_dagrs'] = dictfetchall(cursor)
 
-    # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    return render(request, 'mmda/orphan_dagr_report.html', context)
 
 def sterile_dagr_report(request):
     # Find all DataAggregates which have no child DAGRs
