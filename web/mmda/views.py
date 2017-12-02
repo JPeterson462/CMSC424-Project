@@ -66,6 +66,18 @@ def index(request):
 
     return render(request, 'mmda/index.html', context)
 
+def show_categories(request):
+    context = { }
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM category c
+        """)
+        categories = dictfetchall(cursor)
+        context['categories'] = categories
+
+    return render(request, 'mmda/categories.html', context)
+
 def data_aggregates(request):
     dagrs_list = []
     with connection.cursor() as cursor:
@@ -274,11 +286,11 @@ def html_insert(request):
 def create_category(request):
     # Grab the category name from the HTTP request
     category_name = request.POST['category_name']
-    parent_category_id = request.POST['parent_category_id']
+    parent_category_id = request.POST['parent_category_target']
     parent_category_null = len(parent_category_id) == 0
-    if parent_category_null:
+    if parent_category_null or parent_category_id == 'undefined':
         parent_category_id = None
-    
+
     with connection.cursor() as cursor:
         # Insert a new category record into the database
         cursor.execute("""
@@ -290,7 +302,7 @@ def create_category(request):
         """, [category_name, parent_category_id])
 
     # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    return HttpResponseRedirect(reverse('mmda:categories'))
 
 def remove_category(request):
     # Get the Category ID from the HTTP request

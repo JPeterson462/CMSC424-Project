@@ -1,0 +1,113 @@
+{% extends "mmda/base.html" %}
+
+{% load static %}
+
+{% block title %}Multi-Media Data Aggregator{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Categories</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12 col-sm-9 col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Create a Category
+                </div>
+                <div class="panel-body">
+                    <form action="{% url 'mmda:create_category' %}" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label>Parent Category</label>
+                                    <script>
+                                        function changeParentCategory() {
+                                            select = document.getElementById("parent_category_select");
+                                            guid = select.options[select.selectedIndex].getAttribute('data-guid');
+                                            target = document.getElementById("parent_category_target");
+                                            target.value = guid;
+                                        }
+                                    </script>
+                                    <select onchange="changeParentCategory()" id="parent_category_select" class="form-control">
+                                        <option value=""></option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.category_name }}" data-guid="{{ category.category_id }}">{{ category.category_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <input type="text" name="parent_category_target" class="form-control" placeholder=" Enter parent category here" id="parent_category_target" value="">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-9">
+                                <input type="text" name="category_name" class="form-control">
+                            </div>
+                            <div class="col-xs-3">
+                                <input type="submit" value="Create Category" class="btn btn-success">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Category</th>
+                    <th>Parent Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                    <tr>
+                        <td><button type="button" class="btn btn-danger">Delete</button></td>
+                        <td>{{ category.category_name }}</td>
+                        <td>
+                        {% for c in categories %}
+                            {% if c.category_id == category.parent_category_id %}
+                                {{ c.category_name }}
+                            {% endif %}
+                        {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock content %}
+
+{% block scripts %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+    <script>
+        new Morris.Bar({
+            // ID of the element in which to draw the chart.
+            element: 'myfirstchart',
+            // Chart data records -- each entry in this array corresponds to a point on
+            // the chart.
+            data: [
+                { file_type: 'Documents', count: Number.parseInt('{{ document_count }}') },
+                { file_type: 'Images', count: Number.parseInt('{{ image_count }}') },
+                { file_type: 'Audio', count: Number.parseInt('{{ audio_count }}') },
+                { file_type: 'Video', count: Number.parseInt('{{ video_count }}') },
+                { file_type: 'Other', count: Number.parseInt('{{ other_count }}') }
+            ],
+            // The name of the data record attribute that contains x-values.
+            xkey: 'file_type',
+            // A list of names of data record attributes that contain y-values.
+            ykeys: ['count'],
+            // Labels for the ykeys -- will be displayed when you hover over the
+            // chart.
+            labels: ['Count']
+        });
+    </script>
+{% endblock scripts %}

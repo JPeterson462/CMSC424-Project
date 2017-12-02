@@ -29,21 +29,21 @@
                         <div class="form-group">
                             <label>Parent DAGR</label>
                             <script>
-                                function changeParentDAGR() {
+                                function changeParent1DAGR() {
                                     select = document.getElementById("parent1_dagr_select");
-                                    guid = select.options[select.selectedIndex].dagr;
+                                    guid = select.options[select.selectedIndex].getAttribute('data-guid');
                                     target = document.getElementById("parent1_dagr_target");
                                     target.value = guid;
                                 }
                             </script>
-                            <select onchange="changeParentDAGR()" id="parent1_dagr_select" class="form-control">
+                            <select onchange="changeParent1DAGR()" id="parent1_dagr_select" class="form-control">
                                 <option value=""></option>
                                 {% for dagr in dagrs_list %}
-                                    <option value="{{ dagr.dagr_name }}" guid="{{ dagr.dagr_guid }}">{{ dagr.dagr_name }}</option>
+                                    <option value="{{ dagr.dagr_name }}" data-guid="{{ dagr.dagr_guid }}">{{ dagr.dagr_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <input type="hidden" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here" id="parent1_dagr_target">
+                        <input type="text" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here" id="parent1_dagr_target">
                     </div>
                     <div class="panel-footer">
                         <input type="submit" value="Create New DAGR" class="btn btn-primary" />
@@ -69,21 +69,21 @@
                         <div class="form-group">
                             <label>Parent DAGR</label>
                             <script>
-                                function changeParentDAGR() {
+                                function changeParent2DAGR() {
                                     select = document.getElementById("parent2_dagr_select");
-                                    guid = select.options[select.selectedIndex].dagr;
+                                    guid = select.options[select.selectedIndex].getAttribute('data-guid');
                                     target = document.getElementById("parent2_dagr_target");
                                     target.value = guid;
                                 }
                             </script>
-                            <select onchange="changeParentDAGR()" id="parent2_dagr_select" class="form-control">
+                            <select onchange="changeParent2DAGR()" id="parent2_dagr_select" class="form-control">
                                 <option value=""></option>
                                 {% for dagr in dagrs_list %}
-                                    <option value="{{ dagr.dagr_name }}" guid="{{ dagr.dagr_guid }}">{{ dagr.dagr_name }}</option>
+                                    <option value="{{ dagr.dagr_name }}" data-guid="{{ dagr.dagr_guid }}">{{ dagr.dagr_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <input type="hidden" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here" id="parent2_dagr_target">
+                        <input type="text" name="parent_dagr_guid" class="form-control" placeholder="Enter parent DAGR GUID here" id="parent2_dagr_target">
                     </div>
                     <div class="panel-footer">
                         <input type="submit" value="Create New DAGR" class="btn btn-success" />
