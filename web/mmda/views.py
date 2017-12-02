@@ -171,9 +171,11 @@ def dagr_page(request, dagr_guid):
         other_metadata = dictfetchall(cursor)
 
         cursor.execute("""
-            SELECT *
-            FROM dagr
-            WHERE parent_dagr_guid = %s
+            SELECT ds.*
+            FROM dagr_mapping dm
+            JOIN dagr ds
+                ON dm.child_dagr_guid = ds.dagr_guid
+            WHERE dm.parent_dagr_guid = %s
         """, [dagr_guid])
         child_dagrs = dictfetchall(cursor)
 
@@ -202,11 +204,18 @@ def create_dagr(file_path, parent_dagr_guid, recursion_level):
             # Create a new DAGR where the default name is the selected file's name
             cursor.execute("""
                 INSERT INTO dagr (
-                    dagr_guid, dagr_name, time_created, parent_dagr_guid
+                    dagr_guid, dagr_name
                 ) VALUES (
-                    %s, %s, %s, %s
+                    %s, %s
                 )
-            """, [dagr_guid, os.path.basename(file_path), datetime.datetime.now(), parent_dagr_guid])
+            """, [dagr_guid, os.path.basename(file_path)])
+            cursor.execute("""
+                INSERT INTO dagr_mapping (
+                    parent_dagr_guid, child_dagr_guid
+                ) VALUES (
+                    %s, %s
+                )
+            """, [parent_dagr_guid, dagr_guid])
         storage_path = file_path
         if file_path.startswith("http://") or file_path.startswith("https://"):
             r = requests.get(file_path)
@@ -230,19 +239,27 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
         # Create a new DAGR where the default name is the folder's name
         cursor.execute("""
             INSERT INTO dagr (
-                dagr_guid, dagr_name, time_created, parent_dagr_guid
+                dagr_guid, dagr_name
             ) VALUES (
-                %s, %s, %s, %s
+                %s, %s
             )
-        """, [guid, os.path.basename(folder_path) + '/', datetime.datetime.now(), parent_dagr_guid])
+        """, [guid, os.path.basename(folder_path) + '/'])
+        if parent_dagr_guid:
+            cursor.execute("""
+                INSERT INTO dagr_mapping (
+                    parent_dagr_guid, child_dagr_guid
+                ) VALUES (
+                    %s, %s
+                )
+            """, [parent_dagr_guid, guid])
 
-        # Recursively add DAGRs
-        for file in os.listdir(folder_path):
-            file_path = folder_path + '/' + file
-            if os.path.isdir(file_path):
-                create_folder_dagr(file_path, guid)
-            else:
-                create_dagr(file_path, guid, 0)
+    # Recursively add DAGRs
+    for file in os.listdir(folder_path):
+        file_path = folder_path + '/' + file
+        if os.path.isdir(file_path):
+            create_folder_dagr(file_path, guid)
+        else:
+            create_dagr(file_path, guid, 0)
 
 def insert_file(request):
     # Grab the file path from the HTTP request
@@ -373,7 +390,10 @@ def orphan_dagr_report(request):
         cursor.execute("""
             SELECT *
             FROM dagr
-            WHERE parent_dagr_guid IS NULL
+            WHERE dagr_guid NOT IN (
+                SELECT DISTINCT child_dagr_guid
+                FROM dagr_mapping
+            )
         """)
         context['orphan_dagrs'] = dictfetchall(cursor)
 
@@ -387,8 +407,7 @@ def sterile_dagr_report(request):
             FROM dagr
             WHERE dagr_guid NOT IN (
                 SELECT DISTINCT parent_dagr_guid
-                FROM dagr
-                WHERE parent_dagr_guid IS NOT NULL
+                FROM dagr_mapping
             )
         """)
         context['sterile_dagrs'] = dictfetchall(cursor)
@@ -545,3 +564,71 @@ def file_metadata(request):
         context['other_metadata'] = dictfetchall(cursor)
 
     return render(request, 'mmda/file_metadata.html', context)
+
+def reachability_report(request, dagr_guid):
+    ancestors_or_descendants = request.POST['ancestors_or_descendants']
+    num_levels = int(request.POST['num_levels'])
+
+    context = {
+        'ancestors_or_descendants': ancestors_or_descendants,
+        'num_levels': num_levels
+    }
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM dagr
+            WHERE dagr_guid = %s
+        """, [dagr_guid])
+        context['dagr'] = dictfetchall(cursor)[0]
+
+    reachable_dagr_guids = []
+    if ancestors_or_descendants == 'ancestors':
+        reachable_dagr_guids = find_ancestors([dagr_guid], num_levels)
+    else:
+        reachable_dagr_guids = find_descendants([dagr_guid], num_levels)
+
+    if reachable_dagr_guids:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM dagr
+                WHERE dagr_guid IN %s
+            """, [reachable_dagr_guids])
+            context['reachable_dagrs'] = dictfetchall(cursor)
+    else:
+        context['reachable_dagrs'] = []
+
+    return render(request, 'mmda/reachability_report.html', context)
+
+def find_ancestors(dagr_guids, num_levels):
+    if num_levels > 0:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT parent_dagr_guid
+                FROM dagr_mapping
+                WHERE child_dagr_guid IN %s
+            """, [dagr_guids])
+            parent_dagr_guids = [item['parent_dagr_guid'] for item in dictfetchall(cursor)]
+            if parent_dagr_guids:
+                return parent_dagr_guids + find_ancestors(parent_dagr_guids, num_levels - 1)
+            else:
+                return parent_dagr_guids
+    else:
+        return []
+
+def find_descendants(dagr_guids, num_levels):
+    if num_levels > 0:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT child_dagr_guid
+                FROM dagr_mapping
+                WHERE parent_dagr_guid IN %s
+            """, [dagr_guids])
+            child_dagr_guids = [item['child_dagr_guid'] for item in dictfetchall(cursor)]
+            if child_dagr_guids:
+                return child_dagr_guids + find_descendants(child_dagr_guids, num_levels - 1)
+            else:
+                return child_dagr_guids
+    else:
+        return []
