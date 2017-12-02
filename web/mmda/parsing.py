@@ -37,6 +37,8 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		document_type = 3
 	elif extension in office_extensions:
 		document_type = 1
+	elif file.startswith("http") and "://" in file:
+		document_type = 1
 	file_guid = str(uuid.uuid4())
 	print(dagr_guid)
 	with connection.cursor() as cursor:
@@ -213,12 +215,15 @@ def parse_html_resource(type, guid, base_url, file, create_dagr, recursion_level
 	return True
 
 def parse_html(file, guid, create_dagr, recursion_level):
-	print ("Parsing HTML")
-	f = request.urlopen(file)
-	lines = f.readlines()
-	contents = ''
-	for line in lines:
-		line_utf8 = line.decode('utf8', 'ignore')
-		contents += line_utf8
-	parser = ResourceHTMLParser(parse_html_resource, guid, create_dagr, recursion_level, file)
-	parser.feed(contents)
+	try:
+		print ("Parsing HTML")
+		f = request.urlopen(file)
+		lines = f.readlines()
+		contents = ''
+		for line in lines:
+			line_utf8 = line.decode('utf8', 'ignore')
+			contents += line_utf8
+		parser = ResourceHTMLParser(parse_html_resource, guid, create_dagr, recursion_level, file)
+		parser.feed(contents)
+	except:
+		pass
