@@ -366,7 +366,7 @@ def orphan_dagr_report(request):
     return render(request, 'mmda/orphan_dagr_report.html', context)
 
 def sterile_dagr_report(request):
-    # Find all DataAggregates which have no child DAGRs
+    context = {}
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT *
@@ -377,12 +377,9 @@ def sterile_dagr_report(request):
                 WHERE parent_dagr_guid IS NOT NULL
             )
         """)
-        results = dictfetchall(cursor)
-        for result in results:
-            print(result['dagr_guid'])
+        context['sterile_dagrs'] = dictfetchall(cursor)
 
-    # Redirect the user back to the home page
-    return HttpResponseRedirect(reverse('mmda:index'))
+    return render(request, 'mmda/sterile_dagr_report.html', context)
 
 def time_range_dagr_report(request):
     context = {}
