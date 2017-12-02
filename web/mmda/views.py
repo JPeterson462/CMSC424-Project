@@ -17,6 +17,13 @@ DATETIME_FORMAT = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}")
 
 def index(request):
     context = { }
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM dagr
+        """)
+        context['dagrs_count'] = dictfetchall(cursor)[0]['COUNT(*)']
+
     return render(request, 'mmda/index.html', context)
 
 ''' def index(request):
