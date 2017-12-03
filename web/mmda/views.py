@@ -92,6 +92,116 @@ def data_aggregates(request):
     }
     return render(request, 'mmda/data_aggregates.html', context)
 
+def search(request):
+    context = { }
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM category c
+            ORDER BY category_name
+        """)
+        categories = dictfetchall(cursor)
+        context['categories'] = categories
+        cursor.execute("""
+            SELECT DISTINCT storage_path
+            FROM file_instance
+        """)
+        file_paths = dictfetchall(cursor)
+        context['file_paths'] = file_paths
+        cursor.execute("""
+            SELECT DISTINCT creator_name
+            FROM file_instance
+        """)
+        creators = dictfetchall(cursor)
+        context['creators'] = creators
+        cursor.execute("""
+            SELECT *
+            FROM document_type d
+        """)
+        document_types = dictfetchall(cursor)
+        context['document_types'] = document_types
+    return render(request, 'mmda/search.html', context)
+
+def search_result_query(query):
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        results = dictfetchall(cursor)
+        dagrs = []
+        for result in results:
+            dagrs.append(result['dagr_guid'])
+    return dagrs
+
+def search_result_combine(queries):
+    dagrs = []
+    for query in queries:
+        dagr_list = search_result_query(query)
+        # Append and remove duplicates
+        dagrs = dagrs + list(set(dagr_list) - set(dagrs))
+    return dagrs
+
+def search_result(request):
+    # By Title
+    title = request.POST['title']
+    title_query = "SELECT * FROM dagr WHERE dagr_name LIKE '%" + title + "%'";
+    # By Start/End Time
+    start_time_str = request.POST['start-time']
+    end_time_str = request.POST['end-time']
+    if start_time_str == 'undefined':
+        start_time_str = ""
+    if end_time_str == 'undefined':
+        end_time_str = ""
+    if len(start_time_str) > 0 and len(end_time_str) > 0:
+        if DATETIME_FORMAT.search(start_time_str):
+            start_time = datetime.datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M')
+        else:
+            start_time = datetime.datetime.strptime(start_time_str, '%m/%d/%Y %H:%M %p')
+        if DATETIME_FORMAT.search(end_time_str):
+            end_time = datetime.datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
+        else:
+            end_time = datetime.datetime.strptime(end_time_str, '%m/%d/%Y %H:%M %p')
+        time_query = "SELECT * FROM dagr WHERE time_created BETWEEN '" + str(start_time) + "' AND '" + str(end_time) + "'"
+    # By File
+    file = request.POST['contains-file']
+    file_query = "SELECT * FROM dagr WHERE dagr_guid IN (SELECT fd.dagr_guid FROM (file_instance f INNER JOIN file_dagr_mapping fd ON f.file_guid = fd.file_guid) WHERE storage_path LIKE '%" + file + "')"
+    # By Document Type
+    document_types = request.POST.getlist('document-type')
+    document_types_joined = ",".join(document_types)
+    document_type_query = "SELECT * FROM (file_dagr_mapping fd INNER JOIN file_instance f ON f.file_guid = fd.file_guid INNER JOIN dagr d ON d.dagr_guid = fd.dagr_guid) WHERE document_type IN (" + document_types_joined + ")"
+    # By Category
+    categories = request.POST.getlist('category')
+    categories_joined = ",".join(categories)
+    categories_query = "SELECT * FROM (dagr d INNER JOIN category_mapping c ON d.dagr_guid = c.dagr_guid) WHERE c.category_id IN (" + categories_joined + ")"
+    # By Annotations
+    annotations = request.POST['annotations']
+    annotations_joined = ""
+    if len(annotations) > 0:
+        annotations_joined = ",".join(x.strip() for x in annotations.split(";"))
+    annotations_query = "SELECT * FROM dagr WHERE dagr_guid IN (SELECT dagr_guid FROM annotation a WHERE a.annotation IN (" + annotations_joined + "))"
+    # Append the queries and compute the result
+    context = { }
+    queries = []
+    if len(title) > 0:
+        queries.append(title_query)
+    if len(start_time_str) > 0 and len(end_time_str) > 0:
+        queries.append(time_query)
+    if len(file) > 0:
+        queries.append(file_query)
+    if len(document_types) > 0:
+        queries.append(document_type_query)
+    if len(categories) > 0:
+        queries.append(categories_query)
+    if len(annotations) > 0:
+        queries.append(annotations_query)
+    dagrs = search_result_combine(queries)
+    results = []
+    with connection.cursor() as cursor:
+        for dagr in dagrs:
+            cursor.execute("SELECT * FROM dagr WHERE dagr_guid = '" + dagr + "'")
+            rows = dictfetchall(cursor)
+            results += rows
+    context['results'] = results
+    return render(request, 'mmda/search_result.html', context)
+
 def dagr_page(request, dagr_guid):
     context = {}
     with connection.cursor() as cursor:

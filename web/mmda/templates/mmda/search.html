@@ -1,0 +1,104 @@
+{% extends "mmda/base.html" %}
+
+{% load static %}
+
+{% block title %}Data Aggregates{% endblock %}
+
+{% block content %}
+	<div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Search</h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+	<form action="{% url 'mmda:search_result' %}" method="post">
+		{% csrf_token %}
+		<div class="row">
+			<div class="col-xs-3" style="text-align: right;">
+				Title
+			</div>
+			<div class="col-xs-9">
+				<input type="text" name="title" class="form-control" style="width:75%">
+			</div>
+		</div>
+		<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+			<div class="col-xs-3" style="text-align: right;">
+				Categories
+			</div>
+			<div class="col-xs-9">
+				<span style="display: block; width: 75%">
+					{% for category in categories %}
+					<div class="col-xs-6 col-sm-4 col-md-3">
+						<label class="checkbox-inline">
+							<input type="checkbox" name="category" value="{{ category.category_id }}"> {{ category.category_name }}
+						</label>
+					</div>
+					{% endfor %}
+				</span>
+			</div>
+		</div>
+		<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+			<div class="col-xs-3" style="text-align: right;">
+				Annotations
+			</div>
+			<div class="col-xs-9">
+				<input type="text" name="annotations" class="form-control" style="width:75%" placeholder="Separate annotations with a semicolon">
+			</div>
+		</div>
+		<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+			<div class="col-xs-3" style="text-align: right;">
+				Contains File
+			</div>
+			<div class="col-xs-9">
+				<input type="text" name="contains-file" class="form-control" style="width: 75%">
+			</div>
+		</div>
+		<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+			<div class="col-xs-3" style="text-align: right;">
+				Creation Time
+			</div>
+			<div class="col-xs-9">
+				<input type="text" name="start-time" class="form-control" style="width: 30%; display: inline-block">
+				 to 
+				<input type="text" name="end-time" class="form-control" style="width: 30%; display: inline-block">
+			</div>
+		</div>
+		<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+			<div class="col-xs-3" style="text-align: right;">
+				Document Type
+			</div>
+			<div class="col-xs-9">
+				<span style="display: block; width: 75%">
+					{% for documenttype in document_types %}
+					<div class="col-xs-6 col-sm-4 col-md-3">
+						<label class="checkbox-inline">
+							<input type="checkbox" name="document-type" value="{{ documenttype.document_type_id }}"> {{ documenttype.document_type }}
+						</label>
+					</div>
+					{% endfor %}
+				</span>
+			</div>
+		</div>
+		<div class="row text-center" style="margin-top: 10px; margin-bottom: 10px;">
+			<input type="submit" value="Search" class="btn btn-info">
+		</div>
+	</form>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <!-- DataTables JavaScript -->
+    <script src="{% static 'mmda/vendor/datatables/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'mmda/vendor/datatables-plugins/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'mmda/vendor/datatables-responsive/dataTables.responsive.js' %}"></script>
+
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+        $(document).ready(function() {
+            $('#dataTables-example').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+{% endblock scripts %}
