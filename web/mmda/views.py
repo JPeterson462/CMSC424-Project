@@ -4,6 +4,7 @@ import os
 import uuid
 import requests
 import re
+import sys
 
 from django.db import connection
 from django.http import HttpResponseRedirect
@@ -179,6 +180,16 @@ def dagr_page(request, dagr_guid):
         """, [dagr_guid])
         child_dagrs = dictfetchall(cursor)
 
+        ancestor_dagr_guids = find_ancestors([dagr_guid], sys.maxsize)
+        ancestor_dagrs = []
+        if ancestor_dagr_guids:
+            cursor.execute("""
+                SELECT *
+                FROM dagr
+                WHERE dagr_guid IN %s
+            """, [ancestor_dagr_guids])
+            ancestor_dagrs = dictfetchall(cursor)
+
         context = {
             'dagr': dagr,
             'categories': categories,
@@ -188,7 +199,8 @@ def dagr_page(request, dagr_guid):
             'audio_metadata': audio_metadata,
             'video_metadata': video_metadata,
             'other_metadata': other_metadata,
-            'child_dagrs': child_dagrs
+            'child_dagrs': child_dagrs,
+            'ancestor_dagrs': ancestor_dagrs
         }
 
     return render(request, 'mmda/dagr_page.html', context)
