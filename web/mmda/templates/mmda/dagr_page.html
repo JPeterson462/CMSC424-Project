@@ -17,7 +17,7 @@
             <div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="delete_modal_label" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form action="{% url 'mmda:index' %}" method="post">
+                        <form action="{% url 'mmda:delete_dagr' %}" method="post">
                             {% csrf_token %}
                             <input type="hidden" name="dagr_guid" value="{{ dagr.dagr_guid }}">
                             <div class="modal-header">
@@ -94,7 +94,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for dagr in child_dagrs %}
+                                                {% for dagr in descendant_dagrs %}
                                                     <tr>
                                                         <td>{{ dagr.dagr_name }}</td>
                                                     </tr>
