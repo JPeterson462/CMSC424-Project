@@ -6,3 +6,4 @@ The following python modules are used:
 - Requests (pip install requests)
 - Beautiful Soup (pip install beautifulsoup4)
 - httplib2 (pip install httplib2)
+- enzyme (pip install enzyme)

@@ -3,6 +3,7 @@ import mutagen
 import zipfile, lxml.etree
 import requests
 import httplib2
+import enzyme
 
 from mutagen.aiff import *
 from mutagen.asf import *
@@ -35,7 +36,7 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 						"naa", "mcidas", "mic", "mpo", "pcd", "pixar",
 						"psd", "sgi", "tga", "wal", "xpm"]
 	# https://mutagen.readthedocs.io/en/latest/
-	video_extensions = ["mp4"]
+	video_extensions = ["mkv"]
 	audio_extensions = ["asf", "mp3", "wav", "aiff", "mpeg"]
 	office_extensions = ["docx"]
 	document_type = 0
@@ -150,7 +151,38 @@ def parse_office(file, guid):
 	return True
 
 def parse_video(file, guid):
-	pass
+	with open(file, 'rb') as f:
+		mkv = enzyme.MKV(f)
+		length = mkv.info.duration
+		bitrate = mkv.audio_tracks[0].sampling_frequency
+		channels = mkv.audio_tracks[0].channels
+		f_format = get_extension(file)
+		width = mkv.video_tracks[0].width
+		height = mkv.video_tracks[0].height
+		with connection.cursor() as cursor:
+			cursor.execute("""
+				INSERT INTO video_metadata (
+					file_guid, file_format, length
+				) VALUES (
+					%s, %s, %s
+				)
+			""", [guid, f_format, length])
+			cursor.execute("""
+				INSERT INTO audio_metadata (
+					file_guid, length, bit_rate, mono_or_stereo, file_format
+				) VALUES (
+					%s, %s, %s, %s, %s
+				)
+			""", [guid, length, bitrate, channels, f_format])
+			cursor.execute("""
+				INSERT INTO image_metadata (
+					file_guid, width, height, file_format
+				) VALUES (
+					%s, %s, %s, %s
+				)
+			""", [guid, width, height, f_format])
+
+	return True
 
 def find_attr(attrs, attr):
 	for (name, value) in attrs:
