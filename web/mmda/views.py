@@ -4,6 +4,8 @@ import os
 import uuid
 import requests
 import re
+import sys
+import itertools
 
 from django.db import connection
 from django.http import HttpResponseRedirect
@@ -289,6 +291,26 @@ def dagr_page(request, dagr_guid):
         """, [dagr_guid])
         child_dagrs = dictfetchall(cursor)
 
+        ancestor_dagr_guids = find_ancestors([dagr_guid], sys.maxsize)
+        ancestor_dagrs = []
+        if ancestor_dagr_guids:
+            cursor.execute("""
+                SELECT *
+                FROM dagr
+                WHERE dagr_guid IN %s
+            """, [ancestor_dagr_guids])
+            ancestor_dagrs = dictfetchall(cursor)
+
+        descendant_dagr_guids = find_descendants([dagr_guid], sys.maxsize)
+        descendant_dagrs = []
+        if descendant_dagr_guids:
+            cursor.execute("""
+                SELECT *
+                FROM dagr
+                WHERE dagr_guid IN %s
+            """, [descendant_dagr_guids])
+            descendant_dagrs = dictfetchall(cursor)
+
         context = {
             'dagr': dagr,
             'categories': categories,
@@ -298,7 +320,9 @@ def dagr_page(request, dagr_guid):
             'audio_metadata': audio_metadata,
             'video_metadata': video_metadata,
             'other_metadata': other_metadata,
-            'child_dagrs': child_dagrs
+            'child_dagrs': child_dagrs,
+            'ancestor_dagrs': ancestor_dagrs,
+            'descendant_dagrs': descendant_dagrs
         }
 
     return render(request, 'mmda/dagr_page.html', context)
@@ -366,7 +390,7 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
 
     # Recursively add DAGRs
     for file in os.listdir(folder_path):
-        file_path = folder_path + '/' + file
+        file_path = os.path.join(folder_path, file)
         if os.path.isdir(file_path):
             create_folder_dagr(file_path, guid)
         else:
@@ -743,3 +767,93 @@ def find_descendants(dagr_guids, num_levels):
                 return child_dagr_guids
     else:
         return []
+
+def delete_dagr(request):
+    dagr_guid = request.POST['dagr_guid']
+    ancestors_deletion_method = request.POST['ancestors-deletion']
+    descendants_deletion_method = request.POST['descendants-deletion']
+
+    ancestor_dagr_guids = []
+    if ancestors_deletion_method == 'shallow':
+        ancestor_dagr_guids = find_ancestors([dagr_guid], 1)
+    elif ancestors_deletion_method == 'deep':
+        ancestor_dagr_guids = find_ancestors([dagr_guid], sys.maxsize)
+
+    descendant_dagr_guids = []
+    if descendants_deletion_method == 'shallow':
+        descendant_dagr_guids = find_descendants([dagr_guid], 1)
+    elif descendants_deletion_method == 'deep':
+        descendant_dagr_guids = find_descendants([dagr_guid], sys.maxsize)
+
+    all_dagr_guids = [dagr_guid] + ancestor_dagr_guids + descendant_dagr_guids
+    with connection.cursor() as cursor:
+        for dagr_to_delete in all_dagr_guids:
+            cursor.execute("""
+                DELETE FROM dagr_mapping
+                WHERE parent_dagr_guid = %s
+            """, [dagr_to_delete])
+            cursor.execute("""
+                DELETE FROM dagr_mapping
+                WHERE child_dagr_guid = %s
+            """, [dagr_to_delete])
+            cursor.execute("""
+                DELETE FROM annotation
+                WHERE dagr_guid = %s
+            """, [dagr_to_delete])
+            cursor.execute("""
+                DELETE FROM category_mapping
+                WHERE dagr_guid = %s
+            """, [dagr_to_delete])
+            cursor.execute("""
+                DELETE FROM file_dagr_mapping
+                WHERE dagr_guid = %s
+            """, [dagr_to_delete])
+            cursor.execute("""
+                DELETE FROM dagr
+                WHERE dagr_guid = %s
+            """, [dagr_to_delete])
+
+    return HttpResponseRedirect(reverse('mmda:data_aggregates'))
+
+def delete_duplicate_content(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT fi1.file_guid, fi1.storage_path
+            FROM file_instance fi1
+            JOIN file_instance fi2
+                ON fi1.storage_path = fi2.storage_path
+            WHERE fi1.file_guid != fi2.file_guid
+        """)
+        result = dictfetchall(cursor)
+        result.sort(key=lambda x:x['storage_path'])
+        for key, group in itertools.groupby(result, lambda x: x['storage_path']):
+            file_guids = [x['file_guid'] for x in group]
+            file_to_keep = file_guids[0]
+            files_to_delete = file_guids[1:]
+            cursor.execute("""
+                UPDATE file_dagr_mapping
+                SET file_guid = %s
+                WHERE file_guid IN %s
+            """, [file_to_keep, files_to_delete])
+            cursor.execute("""
+                DELETE FROM audio_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM document_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM image_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM video_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM file_instance
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+
+    return HttpResponseRedirect(reverse('mmda:file_metadata'))

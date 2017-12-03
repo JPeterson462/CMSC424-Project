@@ -5,9 +5,35 @@
 {% block title %}File Metadata{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-lg-12">
+<div class="row">
+        <div class="col-lg-9">
             <h1 class="page-header">File Metadata</h1>
+        </div>
+        <!-- /.col-lg-10 -->
+        <div class="col-lg-3">
+            <button type="button" class="btn btn-outline btn-danger" style="margin-top:50px; float:right" data-toggle="modal" data-target="#delete_modal">
+                Delete Duplicate Content <i class="fa fa-times"></i>
+            </button>
+            <div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="delete_modal_label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h4 class="modal-title" id="delete_modal_label">Are you sure you want to delete duplicate files?</h4>
+                        </div>
+                        <div class="modal-body">
+                            This operation will replace all occurrences of a single file that is referenced by two or more different GUIDs with a single occurrence of the file.
+                        </div>
+                        <div class="modal-footer">
+                            <form action="{% url 'mmda:delete_duplicate_content' %}" method="post">
+                                {% csrf_token %}
+                                <input type="submit" value="Yes, delete duplicate files" class="btn btn-outline btn-success">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

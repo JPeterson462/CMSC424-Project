@@ -76,7 +76,8 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		return parse_office(file, file_guid)
 	elif file.startswith("http") and "://" in file:
 		return parse_html(file, file_guid, create_dagr, recursion_level)
-	return False # No parser found
+	else:
+		return
 
 def parse_image(file, guid):
 	if file.startswith("http://") or file.startswith("https://"):
