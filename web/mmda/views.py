@@ -209,13 +209,14 @@ def create_dagr(file_path, parent_dagr_guid, recursion_level):
                     %s, %s
                 )
             """, [dagr_guid, os.path.basename(file_path)])
-            cursor.execute("""
-                INSERT INTO dagr_mapping (
-                    parent_dagr_guid, child_dagr_guid
-                ) VALUES (
-                    %s, %s
-                )
-            """, [parent_dagr_guid, dagr_guid])
+            if not parent_dagr_guid == None:
+                cursor.execute("""
+                    INSERT INTO dagr_mapping (
+                        parent_dagr_guid, child_dagr_guid
+                    ) VALUES (
+                        %s, %s
+                    )
+                """, [parent_dagr_guid, dagr_guid])
         storage_path = file_path
         if file_path.startswith("http://") or file_path.startswith("https://"):
             r = requests.get(file_path)
