@@ -36,7 +36,7 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 						"psd", "sgi", "tga", "wal", "xpm"]
 	# https://mutagen.readthedocs.io/en/latest/
 	video_extensions = ["mp4"]
-	audio_extensions = ["asf", "mp3", "wav", "aiff"]
+	audio_extensions = ["asf", "mp3", "wav", "aiff", "mpeg"]
 	office_extensions = ["docx"]
 	document_type = 0
 	if extension in image_extensions:
@@ -109,7 +109,7 @@ def parse_audio(file, guid):
 		a_length =  str(f.info.length) + "s"
 		bitrate = f.info.bitrate
 		channels = self.info.channels
-	elif f_format == "mp3":
+	elif f_format == "mp3" or f_format == "mpeg":
 		f = MP3(file)
 		a_length = str(f.info.length) + "s"
 		bitrate = f.info.bitrate
@@ -150,7 +150,7 @@ def parse_office(file, guid):
 	return True
 
 def parse_video(file, guid):
-	pass # TODO
+	pass
 
 def find_attr(attrs, attr):
 	for (name, value) in attrs:
