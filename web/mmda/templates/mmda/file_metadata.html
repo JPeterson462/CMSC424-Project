@@ -25,7 +25,7 @@
                             This operation will replace all occurrences of a single file that is referenced by two or more different GUIDs with a single occurrence of the file.
                         </div>
                         <div class="modal-footer">
-                            <form action="{% url 'mmda:index' %}" method="post">
+                            <form action="{% url 'mmda:delete_duplicate_content' %}" method="post">
                                 {% csrf_token %}
                                 <input type="submit" value="Yes, delete duplicate files" class="btn btn-outline btn-success">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

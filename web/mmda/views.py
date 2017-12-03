@@ -5,6 +5,7 @@ import uuid
 import requests
 import re
 import sys
+import itertools
 
 from django.db import connection
 from django.http import HttpResponseRedirect
@@ -279,7 +280,7 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
 
     # Recursively add DAGRs
     for file in os.listdir(folder_path):
-        file_path = folder_path + '/' + file
+        file_path = os.path.join(folder_path, file)
         if os.path.isdir(file_path):
             create_folder_dagr(file_path, guid)
         else:
@@ -703,3 +704,46 @@ def delete_dagr(request):
             """, [dagr_to_delete])
 
     return HttpResponseRedirect(reverse('mmda:data_aggregates'))
+
+def delete_duplicate_content(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT fi1.file_guid, fi1.storage_path
+            FROM file_instance fi1
+            JOIN file_instance fi2
+                ON fi1.storage_path = fi2.storage_path
+            WHERE fi1.file_guid != fi2.file_guid
+        """)
+        result = dictfetchall(cursor)
+        result.sort(key=lambda x:x['storage_path'])
+        for key, group in itertools.groupby(result, lambda x: x['storage_path']):
+            file_guids = [x['file_guid'] for x in group]
+            file_to_keep = file_guids[0]
+            files_to_delete = file_guids[1:]
+            cursor.execute("""
+                UPDATE file_dagr_mapping
+                SET file_guid = %s
+                WHERE file_guid IN %s
+            """, [file_to_keep, files_to_delete])
+            cursor.execute("""
+                DELETE FROM audio_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM document_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM image_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM video_metadata
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+            cursor.execute("""
+                DELETE FROM file_instance
+                WHERE file_guid IN %s
+            """, [files_to_delete])
+
+    return HttpResponseRedirect(reverse('mmda:file_metadata'))

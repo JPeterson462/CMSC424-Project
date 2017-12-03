@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^remove_category_from_dagr/(?P<dagr_guid>[0-9a-z\-]+)/(?P<category_id>[0-9]+)/$', views.remove_category_from_dagr, name='remove_category_from_dagr'),
     url(r'^add_category_to_dagr/(?P<dagr_guid>[0-9a-z\-]+)/$', views.add_category_to_dagr, name='add_category_to_dagr'),
     url(r'^delete_dagr/$', views.delete_dagr, name='delete_dagr'),
-    url(r'^categories/$', views.show_categories, name='categories')
+    url(r'^categories/$', views.show_categories, name='categories'),
+    url(r'^delete_duplicate_content/$', views.delete_duplicate_content, name='delete_duplicate_content')
 ]
