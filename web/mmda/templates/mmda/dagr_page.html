@@ -187,10 +187,12 @@
                 </div>
                 <div class="panel-body">
                     {% for annotation in annotations %}
-                        <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
-                            {{ annotation.annotation }}
-                            <a href="{% url 'mmda:remove_annotation_from_dagr' dagr.dagr_guid annotation.annotation %}"><p class="fa fa-times"></p></a>
-                        </button>
+                        <a href="{% url 'mmda:remove_annotation_from_dagr' dagr.dagr_guid annotation.annotation %}">
+                            <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
+                                {{ annotation.annotation }}
+                                <p class="fa fa-times"></p>
+                            </button>
+                        </a>
                     {% endfor %}
                 </div>
                 <div class="panel-footer">
@@ -210,10 +212,12 @@
                 <div class="panel-body">
                     {% for category in categories %}
                         {% if category.dagr_guid == dagr.dagr_guid %}
-                            <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
-                                {{ category.category_name }}
-                                <a href="{% url 'mmda:remove_category_from_dagr' dagr.dagr_guid category.category_id %}" style="color:rgb(255, 174, 0)"><p class="fa fa-times"></p></a>
-                            </button>
+                            <a href="{% url 'mmda:remove_category_from_dagr' dagr.dagr_guid category.category_id %}" style="color:rgb(255, 174, 0)">
+                                <button type="button" class="btn btn-outline btn-default" style="margin:5px; padding-top:10px">
+                                    {{ category.category_name }}
+                                   <p class="fa fa-times"></p>
+                                </button>
+                            </a>
                         {% endif %}
                     {% endfor %}
                 </div>
