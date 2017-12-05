@@ -787,31 +787,60 @@ def delete_dagr(request):
 
     all_dagr_guids = [dagr_guid] + ancestor_dagr_guids + descendant_dagr_guids
     with connection.cursor() as cursor:
-        for dagr_to_delete in all_dagr_guids:
-            cursor.execute("""
-                DELETE FROM dagr_mapping
-                WHERE parent_dagr_guid = %s
-            """, [dagr_to_delete])
-            cursor.execute("""
-                DELETE FROM dagr_mapping
-                WHERE child_dagr_guid = %s
-            """, [dagr_to_delete])
-            cursor.execute("""
-                DELETE FROM annotation
-                WHERE dagr_guid = %s
-            """, [dagr_to_delete])
-            cursor.execute("""
-                DELETE FROM category_mapping
-                WHERE dagr_guid = %s
-            """, [dagr_to_delete])
-            cursor.execute("""
-                DELETE FROM file_dagr_mapping
-                WHERE dagr_guid = %s
-            """, [dagr_to_delete])
-            cursor.execute("""
-                DELETE FROM dagr
-                WHERE dagr_guid = %s
-            """, [dagr_to_delete])
+        cursor.execute("""
+            DELETE FROM dagr_mapping
+            WHERE parent_dagr_guid IN %s
+        """, [all_dagr_guids])
+        cursor.execute("""
+            DELETE FROM dagr_mapping
+            WHERE child_dagr_guid IN %s
+        """, [all_dagr_guids])
+        cursor.execute("""
+            DELETE FROM annotation
+            WHERE dagr_guid IN %s
+        """, [all_dagr_guids])
+        cursor.execute("""
+            DELETE FROM category_mapping
+            WHERE dagr_guid IN %s
+        """, [all_dagr_guids])
+        cursor.execute("""
+            DELETE FROM file_dagr_mapping
+            WHERE dagr_guid IN %s
+        """, [all_dagr_guids])
+        cursor.execute("""
+            DELETE FROM dagr
+            WHERE dagr_guid IN %s
+        """, [all_dagr_guids])
+
+        cursor.execute("""
+            SELECT DISTINCT file_guid
+            FROM file_instance
+            WHERE file_guid NOT IN (
+                SELECT DISTINCT file_guid
+                FROM file_dagr_mapping
+            )
+        """)
+        file_guids = [item['file_guid'] for item in dictfetchall(cursor)]
+        cursor.execute("""
+            DELETE FROM audio_metadata
+            WHERE file_guid IN %s
+        """, [file_guids])
+        cursor.execute("""
+            DELETE FROM image_metadata
+            WHERE file_guid IN %s
+        """, [file_guids])
+        cursor.execute("""
+            DELETE FROM video_metadata
+            WHERE file_guid IN %s
+        """, [file_guids])
+        cursor.execute("""
+            DELETE FROM document_metadata
+            WHERE file_guid IN %s
+        """, [file_guids])
+        cursor.execute("""
+            DELETE FROM file_instance
+            WHERE file_guid IN %s
+        """, [file_guids])
 
     return HttpResponseRedirect(reverse('mmda:data_aggregates'))
 
