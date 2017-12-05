@@ -13,6 +13,21 @@ from mutagen.mp3 import JOINTSTEREO
 from mutagen.ogg import *
 from mutagen.wavpack import WavPack
 
+from docx import Document
+from docx.image.image import Image
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
+from docx.opc.coreprops import CoreProperties
+from docx.package import Package
+from docx.parts.document import DocumentPart
+from docx.parts.image import ImagePart
+from docx.parts.numbering import NumberingPart
+from docx.parts.settings import SettingsPart
+from docx.parts.styles import StylesPart
+from docx.settings import Settings
+from docx.styles.style import BaseStyle
+from docx.styles.styles import Styles
+from docx.text.paragraph import Paragraph
+
 from urllib import request
 from urllib.parse import urljoin
 from django.db import connection
@@ -135,17 +150,15 @@ def parse_audio(file, guid):
 
 def parse_office(file, guid):
 	f_format = get_extension(file)
-	zf = zipfile.ZipFile(file)
-	doc = lxml.etree.fromstring(zf.read('docProps/core.xml'))
-	ns = {'dc': 'http://purl.org/dc/elements/1.1'}
-	creator = doc.xpath('//dc:creator', namespaces=ns)[0].text
-	title = doc.xpath('//dc:title', namespaces=ns)[0].text
+	doc = Document(file)
+	title = doc.core_properties.title
+	creator = doc.core_properties.author
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO document_metadata (
-				file_guid, title, creator
+				file_guid, title, authors
 			) VALUES (
-				%s, %s
+				%s, %s, %s
 			)
 		""", [guid, title, creator])
 	return True
