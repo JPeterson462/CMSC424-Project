@@ -4,6 +4,7 @@ import zipfile, lxml.etree
 import requests
 import httplib2
 import enzyme
+import wave
 
 from mutagen.aiff import *
 from mutagen.asf import *
@@ -119,10 +120,15 @@ def parse_audio(file, guid):
 		else:
 			channels = 1
 	elif f_format == "wav":
-		f = WavPack(file)
-		a_length = str(f.info.length) + "s"
-		bitrate = f.info.sample_rate
-		channels = f.info.channels
+		print('here')
+		with wave.open(file, mode='rb') as f:
+			bitrate = f.getframerate()
+			a_length = f.getnframes() / float(bitrate)
+			channels = f.getnchannels()
+		#f = WavPack(file)
+		#a_length = str(f.info.length) + "s"
+		#bitrate = f.info.sample_rate
+		#channels = f.info.channels
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO audio_metadata (
