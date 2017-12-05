@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Data Aggregates{% endblock %}
+{% block title %}Search{% endblock %}
 
 {% block content %}
 	<div class="row">
@@ -28,13 +28,17 @@
 			</div>
 			<div class="col-xs-9">
 				<span style="display: block; width: 75%">
-					{% for category in categories %}
-					<div class="col-xs-6 col-sm-4 col-md-3">
-						<label class="checkbox-inline">
-							<input type="checkbox" name="category" value="{{ category.category_id }}"> {{ category.category_name }}
-						</label>
-					</div>
-					{% endfor %}
+					{% if categories %}
+						{% for category in categories %}
+						<div class="col-xs-6 col-sm-4 col-md-3">
+							<label class="checkbox-inline">
+								<input type="checkbox" name="category" value="{{ category.category_id }}"> {{ category.category_name }}
+							</label>
+						</div>
+						{% endfor %}
+					{% else %}
+						<b>No categories available</b>
+					{% endif %}
 				</span>
 			</div>
 		</div>

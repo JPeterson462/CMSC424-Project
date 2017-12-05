@@ -821,26 +821,27 @@ def delete_dagr(request):
             )
         """)
         file_guids = [item['file_guid'] for item in dictfetchall(cursor)]
-        cursor.execute("""
-            DELETE FROM audio_metadata
-            WHERE file_guid IN %s
-        """, [file_guids])
-        cursor.execute("""
-            DELETE FROM image_metadata
-            WHERE file_guid IN %s
-        """, [file_guids])
-        cursor.execute("""
-            DELETE FROM video_metadata
-            WHERE file_guid IN %s
-        """, [file_guids])
-        cursor.execute("""
-            DELETE FROM document_metadata
-            WHERE file_guid IN %s
-        """, [file_guids])
-        cursor.execute("""
-            DELETE FROM file_instance
-            WHERE file_guid IN %s
-        """, [file_guids])
+        if file_guids:
+            cursor.execute("""
+                DELETE FROM audio_metadata
+                WHERE file_guid IN %s
+            """, [file_guids])
+            cursor.execute("""
+                DELETE FROM image_metadata
+                WHERE file_guid IN %s
+            """, [file_guids])
+            cursor.execute("""
+                DELETE FROM video_metadata
+                WHERE file_guid IN %s
+            """, [file_guids])
+            cursor.execute("""
+                DELETE FROM document_metadata
+                WHERE file_guid IN %s
+            """, [file_guids])
+            cursor.execute("""
+                DELETE FROM file_instance
+                WHERE file_guid IN %s
+            """, [file_guids])
 
     return HttpResponseRedirect(reverse('mmda:data_aggregates'))
 
