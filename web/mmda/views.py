@@ -177,8 +177,8 @@ def search_result(request):
     annotations = request.POST['annotations']
     annotations_joined = ""
     if len(annotations) > 0:
-        annotations_joined = ",".join(x.strip() for x in annotations.split(";"))
-    annotations_query = "SELECT * FROM dagr WHERE dagr_guid IN (SELECT dagr_guid FROM annotation a WHERE a.annotation IN (" + annotations_joined + "))"
+        annotations_joined = "','".join(x.strip() for x in annotations.split(";"))
+    annotations_query = "SELECT * FROM dagr WHERE dagr_guid IN (SELECT dagr_guid FROM annotation a WHERE a.annotation IN ('" + annotations_joined + "'))"
     # Append the queries and compute the result
     context = { }
     queries = []
