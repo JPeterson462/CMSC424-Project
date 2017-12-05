@@ -181,25 +181,11 @@ def parse_video(file, guid):
 		with connection.cursor() as cursor:
 			cursor.execute("""
 				INSERT INTO video_metadata (
-					file_guid, file_format, length
+					file_guid, file_format, length, bit_rate, mono_or_stereo, width, height
 				) VALUES (
-					%s, %s, %s
+					%s, %s, %s, %s, %s, %s, %s
 				)
-			""", [guid, f_format, length])
-			cursor.execute("""
-				INSERT INTO audio_metadata (
-					file_guid, length, bit_rate, mono_or_stereo, file_format
-				) VALUES (
-					%s, %s, %s, %s, %s
-				)
-			""", [guid, length, bitrate, channels, f_format])
-			cursor.execute("""
-				INSERT INTO image_metadata (
-					file_guid, width, height, file_format
-				) VALUES (
-					%s, %s, %s, %s
-				)
-			""", [guid, width, height, f_format])
+			""", [guid, f_format, length, bitrate, channels, width, height])
 
 	return True
 

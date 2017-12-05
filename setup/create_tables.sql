@@ -86,6 +86,10 @@ CREATE TABLE video_metadata (
 	file_guid varchar(64),
 	file_format varchar(64),
 	length varchar(64),
+	bit_rate int,
+	mono_or_stereo int,
+	width int,
+	height int,
 	FOREIGN KEY (file_guid) REFERENCES file_instance(file_guid)
 );
 

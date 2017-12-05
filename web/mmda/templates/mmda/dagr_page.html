@@ -391,6 +391,10 @@
                                         <th>Last Modified</th>
                                         <th>Length</th>
                                         <th>File Format</th>
+                                        <th>Bit Rate</th>
+                                        <th>Mono or Stereo</th>
+                                        <th>Width</th>
+                                        <th>Height</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -403,6 +407,10 @@
                                             <td>{{ metadata.last_modified }}</td>
                                             <td>{{ metadata.length }}</td>
                                             <td>{{ metadata.file_format }}</td>
+                                            <td>{{ metadata.bit_rate }}</td>
+                                            <td>{{ metadata.mono_or_stereo }}</td>
+                                            <td>{{ metadata.width }}</td>
+                                            <td>{{ metadata.height }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
