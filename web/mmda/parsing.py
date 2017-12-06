@@ -92,7 +92,7 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 	elif extension in office_extensions:
 		return parse_office(file, file_guid)
 	elif file.startswith("http") and "://" in file:
-		return parse_html(file, file_guid, create_dagr, recursion_level)
+		return parse_html(file, file_guid, dagr_guid, create_dagr, recursion_level)
 	else:
 		return
 
@@ -195,7 +195,7 @@ def find_attr(attrs, attr):
 			return value
 	return None
 
-def parse_html_page(guid, url, r, recursion_level, create_dagr):
+def parse_html_page(guid, dagr_guid, url, r, recursion_level, create_dagr):
 	soup = BeautifulSoup(r, 'html.parser')
 	html_to_load = []
 	images_to_load = []
@@ -243,22 +243,22 @@ def parse_html_page(guid, url, r, recursion_level, create_dagr):
 				) VALUES (
 					%s, %s
 				)
-			""", [guid, annotation])
+			""", [dagr_guid, annotation])
 		for link in html_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
 		for link in images_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
 		for link in videos_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
 		for link in audio_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), guid, recursion_level + 1)
+			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
 
-def parse_html(file, guid, create_dagr, recursion_level):
+def parse_html(file, guid, dagr_guid, create_dagr, recursion_level):
 	print ("Parsing HTML")
 	http = httplib2.Http()
 	status, response = http.request(file)
-	parse_html_page(guid, file, response, recursion_level, create_dagr)
+	parse_html_page(guid, dagr_guid, file, response, recursion_level, create_dagr)
