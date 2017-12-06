@@ -65,6 +65,8 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		document_type = 3
 	elif extension in office_extensions:
 		document_type = 1
+	elif extension == "html":
+		document_type = 1
 	elif file.startswith("http") and "://" in file:
 		document_type = 1
 	file_guid = str(uuid.uuid4())
@@ -92,6 +94,8 @@ def parse_file(file, dagr_guid, storage_path, creator_name, creation_time, last_
 		return parse_audio(file, file_guid)
 	elif extension in office_extensions:
 		return parse_office(file, file_guid)
+	elif extension == "html":
+		return parse_html(file, file_guid, dagr_guid, create_dagr, recursion_level)
 	elif file.startswith("http") and "://" in file:
 		return parse_html(file, file_guid, dagr_guid, create_dagr, recursion_level)
 	else:
@@ -196,6 +200,11 @@ def find_attr(attrs, attr):
 			return value
 	return None
 
+def smart_join(base, href):
+	if base.startswith("http"):
+		return urljoin(base, href)
+	return base[:base.rfind('\\')] + '\\' + href
+
 def parse_html_page(guid, dagr_guid, url, r, recursion_level, create_dagr):
 	soup = BeautifulSoup(r, 'html.parser')
 	html_to_load = []
@@ -228,7 +237,11 @@ def parse_html_page(guid, dagr_guid, url, r, recursion_level, create_dagr):
 		if m.get('name') == 'author':
 			authors = m.get('content')
 		if m.get('name') == 'keywords':
-			keywords = m.get('content').split(',')
+			keywords_text = m.get('content')
+			if keywords_text == None:
+				keywords = []
+			else:
+				keywords = keywords_text.split(',')
 	with connection.cursor() as cursor:
 		cursor.execute("""
 			INSERT INTO document_metadata (
@@ -247,20 +260,26 @@ def parse_html_page(guid, dagr_guid, url, r, recursion_level, create_dagr):
 			""", [dagr_guid, annotation])
 		for link in html_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
+			create_dagr(smart_join(url, link), dagr_guid, recursion_level + 1)
 		for link in images_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
+			create_dagr(smart_join(url, link), dagr_guid, recursion_level + 1)
 		for link in videos_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
+			create_dagr(smart_join(url, link), dagr_guid, recursion_level + 1)
 		for link in audio_to_load:
 			print(link)
-			create_dagr(urljoin(url, link), dagr_guid, recursion_level + 1)
+			create_dagr(smart_join(url, link), dagr_guid, recursion_level + 1)
 
 def parse_html(file, guid, dagr_guid, create_dagr, recursion_level):
 	print ("Parsing HTML")
 	#http = httplib2.Http()
 	#status, response = http.request(file)
-	r = requests.get(file)
-	parse_html_page(guid, dagr_guid, file, r.content, recursion_level, create_dagr)
+	if file.startswith("http"):
+		r = requests.get(file)
+		parse_html_page(guid, dagr_guid, file, r.content, recursion_level, create_dagr)
+	else:
+		with open(file, 'r') as f:
+			content = f.read()
+			print(content)
+			parse_html_page(guid, dagr_guid, file, content, recursion_level, create_dagr)
