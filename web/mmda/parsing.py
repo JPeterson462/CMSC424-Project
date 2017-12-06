@@ -37,6 +37,7 @@ from io import BytesIO
 from .models import *
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
+from lxml import html
 
 def get_extension(file):
 	parts = file.split('.')
@@ -259,6 +260,7 @@ def parse_html_page(guid, dagr_guid, url, r, recursion_level, create_dagr):
 
 def parse_html(file, guid, dagr_guid, create_dagr, recursion_level):
 	print ("Parsing HTML")
-	http = httplib2.Http()
-	status, response = http.request(file)
-	parse_html_page(guid, dagr_guid, file, response, recursion_level, create_dagr)
+	#http = httplib2.Http()
+	#status, response = http.request(file)
+	r = requests.get(file)
+	parse_html_page(guid, dagr_guid, file, r.content, recursion_level, create_dagr)
