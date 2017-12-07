@@ -331,7 +331,7 @@ def format_date_from_header(header_date):
     return datetime.datetime.strptime(header_date, '%a, %d %b %Y %H:%M:%S %Z')
 
 def create_dagr(file_path, parent_dagr_guid, recursion_level):
-    if recursion_level < 2:
+    if recursion_level <= 2:
         print ("Creating DAGR for: " + file_path)
         dagr_guid = str(uuid.uuid4())
         with connection.cursor() as cursor:
