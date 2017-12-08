@@ -397,8 +397,11 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
             create_dagr(file_path, guid, 0)
 
 def insert_file(request):
-    # Grab the file path from the HTTP request
     file_path = request.POST['file_path']
+    if not os.path.isfile(file_path):
+        print('File does not exist.')
+        return HttpResponseRedirect(reverse('mmda:data_aggregates'))
+
     parent_guid = request.POST['parent_dagr_guid']
     parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
@@ -410,8 +413,11 @@ def insert_file(request):
     return HttpResponseRedirect(reverse('mmda:data_aggregates'))
 
 def bulk_data_insert(request):
-    # Grab the folder path from the HTTP request
     folder_path = request.POST['folder_path']
+    if not os.path.isdir(folder_path):
+        print('Folder does not exist.')
+        return HttpResponseRedirect(reverse('mmda:data_aggregates'))
+
     parent_guid = request.POST['parent_dagr_guid']
     parent_guid_null = len(parent_guid) == 0
     if parent_guid_null:
