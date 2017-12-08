@@ -398,7 +398,7 @@ def create_folder_dagr(folder_path, parent_dagr_guid):
 
 def insert_file(request):
     file_path = request.POST['file_path']
-    if not os.path.isfile(file_path):
+    if not os.path.isfile(file_path) and file_path[0:4] != 'http':
         print('File does not exist.')
         return HttpResponseRedirect(reverse('mmda:data_aggregates'))
 
